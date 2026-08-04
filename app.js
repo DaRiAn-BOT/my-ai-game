@@ -1,4 +1,8 @@
-let state = { gold: 100, army: 50, food: 80, day: 1 };
+const STORAGE_KEY = "kingdom-chronicles-save";
+
+const createDefaultState = () => ({ gold: 100, army: 50, food: 80, day: 1 });
+
+let state = createDefaultState();
 
 const events = [
     {
@@ -23,6 +27,30 @@ const events = [
         ]
     }
 ];
+
+function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (!saved || typeof saved !== "object") {
+            return createDefaultState();
+        }
+
+        return {
+            ...createDefaultState(),
+            ...saved
+        };
+    } catch {
+        return createDefaultState();
+    }
+}
+
+function clearSavedState() {
+    localStorage.removeItem(STORAGE_KEY);
+}
 
 function updateUI() {
     document.getElementById("gold").innerText = state.gold;
@@ -51,6 +79,8 @@ function showNewEvent() {
             state.army += choice.effect.army;
             state.food += choice.effect.food;
             state.day += 1;
+
+            saveState();
             updateUI();
             showNewEvent();
         };
@@ -59,6 +89,8 @@ function showNewEvent() {
 }
 
 function endGame() {
+    saveState();
+
     document.getElementById("event-text").innerText =
         `Ваше правление окончено! Вы продержались дней: ${state.day}.`;
 
@@ -68,17 +100,25 @@ function endGame() {
     document.getElementById("back-menu-btn").onclick = backToMenu;
 }
 
-function startGame() {
+function startGame(reset = false) {
+    if (reset) {
+        state = createDefaultState();
+        clearSavedState();
+    } else {
+        state = loadState();
+    }
+
     document.getElementById("main-menu").classList.add("hidden");
     document.getElementById("game-container").classList.remove("hidden");
     document.getElementById("modal-overlay").classList.add("hidden");
 
-    state = { gold: 100, army: 50, food: 80, day: 1 };
     updateUI();
     showNewEvent();
 }
 
 function backToMenu() {
+    saveState();
+
     document.getElementById("game-container").classList.add("hidden");
     document.getElementById("main-menu").classList.remove("hidden");
     document.getElementById("modal-overlay").classList.add("hidden");
@@ -97,13 +137,17 @@ function toggleModal(show) {
 }
 
 window.onload = () => {
-    document.getElementById("start-game-btn").onclick = startGame;
+    state = loadState();
+
+    document.getElementById("start-game-btn").onclick = () => startGame(false);
     document.getElementById("about-btn").onclick = () => toggleModal(true);
     document.getElementById("close-modal-btn").onclick = () => toggleModal(false);
-    document.getElementById("restart-game-btn").onclick = startGame;
+    document.getElementById("restart-game-btn").onclick = () => startGame(true);
     document.getElementById("back-to-menu-btn").onclick = backToMenu;
 
     document.getElementById("game-container").classList.add("hidden");
     document.getElementById("modal-overlay").classList.add("hidden");
     document.getElementById("main-menu").classList.remove("hidden");
+
+    updateUI();
 };
