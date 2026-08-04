@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Управление Королевством</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 
     <!-- Актуальный CDN Supabase -->
@@ -25,12 +28,32 @@
 
     <div id="game-container" class="game-container hidden">
         <header>
-            <h1>Замковые Хроники</h1>
+            <div class="title-box">
+                <p class="title-kicker">Медieval Dawn</p>
+                <h1>Замковые Хроники</h1>
+            </div>
+
             <div class="stats">
-                <span>🪙 Золото: <strong id="gold">100</strong></span>
-                <span>⚔️ Армия: <strong id="army">50</strong></span>
-                <span>🌾 Еда: <strong id="food">80</strong></span>
-                <span>📅 День: <strong id="day">1</strong></span>
+                <div class="resource-pill">
+                    <span class="resource-icon">🪙</span>
+                    <span class="resource-label">Золото</span>
+                    <strong id="gold">100</strong>
+                </div>
+                <div class="resource-pill">
+                    <span class="resource-icon">⚔️</span>
+                    <span class="resource-label">Армия</span>
+                    <strong id="army">50</strong>
+                </div>
+                <div class="resource-pill">
+                    <span class="resource-icon">🌾</span>
+                    <span class="resource-label">Еда</span>
+                    <strong id="food">80</strong>
+                </div>
+                <div class="resource-pill">
+                    <span class="resource-icon">📅</span>
+                    <span class="resource-label">День</span>
+                    <strong id="day">1</strong>
+                </div>
             </div>
         </header>
 
@@ -41,7 +64,7 @@
                 <canvas id="enemy-token" class="map-token" width="32" height="32"></canvas>
             </div>
 
-            <div id="event-box">
+            <div id="event-box" class="parchment-panel">
                 <p id="event-text">Идите по карте, чтобы встретить события и нападения.</p>
                 <div id="choices-container"></div>
             </div>
