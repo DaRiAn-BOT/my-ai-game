@@ -113,16 +113,134 @@ function updateUI() {
     document.getElementById("day").innerText = state.day;
 }
 
+function drawPlayerSprite() {
+    const canvas = document.getElementById("player-token");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 32, 32);
+    ctx.imageSmoothingEnabled = false;
+
+    const hair = "#7a4a24";
+    const skin = "#f0c8a0";
+    const shirt = "#4f86ff";
+    const pants = "#232b4a";
+    const shoes = "#2d1d12";
+    const outline = "#141414";
+
+    const drawPixel = (x, y, color) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, 1, 1);
+    };
+
+    for (let x = 9; x <= 23; x += 1) {
+        drawPixel(x, 3, hair);
+        drawPixel(x, 4, hair);
+    }
+
+    for (let x = 10; x <= 22; x += 1) {
+        drawPixel(x, 5, hair);
+    }
+
+    for (let x = 11; x <= 21; x += 1) {
+        drawPixel(x, 6, hair);
+    }
+
+    for (let x = 11; x <= 21; x += 1) {
+        drawPixel(x, 7, hair);
+    }
+
+    for (let x = 10; x <= 22; x += 1) {
+        for (let y = 8; y <= 14; y += 1) {
+            drawPixel(x, y, skin);
+        }
+    }
+
+    for (let x = 11; x <= 21; x += 1) {
+        drawPixel(x, 15, shirt);
+        drawPixel(x, 16, shirt);
+        drawPixel(x, 17, shirt);
+        drawPixel(x, 18, shirt);
+    }
+
+    for (let x = 12; x <= 20; x += 1) {
+        drawPixel(x, 19, pants);
+        drawPixel(x, 20, pants);
+        drawPixel(x, 21, pants);
+    }
+
+    for (let x = 11; x <= 13; x += 1) {
+        drawPixel(x, 22, shoes);
+    }
+    for (let x = 19; x <= 21; x += 1) {
+        drawPixel(x, 22, shoes);
+    }
+
+    drawPixel(14, 10, outline);
+    drawPixel(18, 10, outline);
+    drawPixel(15, 11, outline);
+    drawPixel(17, 11, outline);
+    drawPixel(16, 12, outline);
+
+    for (let x = 12; x <= 20; x += 1) {
+        drawPixel(x, 18, outline);
+    }
+}
+
+function drawEnemySprite() {
+    const canvas = document.getElementById("enemy-token");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 32, 32);
+    ctx.imageSmoothingEnabled = false;
+
+    const red = "#a52424";
+    const dark = "#201010";
+
+    const drawPixel = (x, y, color) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, 1, 1);
+    };
+
+    for (let x = 8; x <= 24; x += 1) {
+        drawPixel(x, 7, red);
+        drawPixel(x, 8, red);
+        drawPixel(x, 9, red);
+    }
+
+    for (let x = 10; x <= 22; x += 1) {
+        drawPixel(x, 10, dark);
+    }
+
+    for (let x = 12; x <= 20; x += 1) {
+        drawPixel(x, 11, dark);
+    }
+
+    for (let x = 9; x <= 23; x += 1) {
+        drawPixel(x, 12, red);
+    }
+
+    for (let x = 8; x <= 24; x += 1) {
+        drawPixel(x, 13, red);
+    }
+
+    for (let x = 10; x <= 13; x += 1) {
+        drawPixel(x, 18, dark);
+    }
+    for (let x = 19; x <= 22; x += 1) {
+        drawPixel(x, 18, dark);
+    }
+}
+
 function buildMapGrid() {
     const grid = document.getElementById("map-grid");
     grid.innerHTML = "";
 
+    const terrainColors = ["#213020", "#29422b", "#365c36", "#4a6e40"];
     for (let y = 0; y < MAP_ROWS; y += 1) {
         for (let x = 0; x < MAP_COLS; x += 1) {
             const cell = document.createElement("div");
             cell.className = "map-cell";
             cell.dataset.x = String(x);
             cell.dataset.y = String(y);
+            cell.style.background = terrainColors[(x + y) % terrainColors.length];
             grid.appendChild(cell);
         }
     }
@@ -259,6 +377,8 @@ function toggleModal(show) {
 window.onload = () => {
     state = loadState();
     buildMapGrid();
+    drawPlayerSprite();
+    drawEnemySprite();
     renderMap();
 
     document.getElementById("start-game-btn").onclick = () => startGame(true);

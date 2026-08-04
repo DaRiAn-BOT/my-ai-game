@@ -110,7 +110,9 @@ header h1 {
     position: relative;
     width: 100%;
     height: 280px;
-    background: #1d1d1d;
+    background:
+        radial-gradient(circle at top left, rgba(92, 140, 82, 0.3), transparent 30%),
+        linear-gradient(180deg, #172012, #090c07);
     border: 1px solid rgba(255, 215, 115, 0.2);
     border-radius: 12px;
     margin-bottom: 16px;
@@ -132,23 +134,19 @@ header h1 {
 
 .map-token {
     position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 42px;
     height: 42px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.4);
-    font-size: 1.25rem;
     z-index: 2;
+    image-rendering: pixelated;
+    pointer-events: none;
 }
 
 #player-token {
-    background: rgba(79, 128, 255, 0.38);
+    filter: drop-shadow(0 0 6px rgba(79, 128, 255, 0.55));
 }
 
 #enemy-token {
-    background: rgba(255, 70, 70, 0.35);
+    filter: drop-shadow(0 0 6px rgba(255, 70, 70, 0.55));
 }
 
 #event-box {
