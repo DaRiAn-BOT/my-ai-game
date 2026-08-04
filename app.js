@@ -119,69 +119,65 @@ function drawPlayerSprite() {
     ctx.clearRect(0, 0, 32, 32);
     ctx.imageSmoothingEnabled = false;
 
-    const hair = "#7a4a24";
-    const skin = "#f0c8a0";
-    const shirt = "#4f86ff";
-    const pants = "#232b4a";
-    const shoes = "#2d1d12";
-    const outline = "#141414";
+    const hair = "#7f4f27";
+    const skin = "#f3c5a0";
+    const tunic = "#4f8f57";
+    const pants = "#3a2f2a";
+    const boots = "#7c4c2f";
+    const outline = "#191919";
 
     const drawPixel = (x, y, color) => {
         ctx.fillStyle = color;
         ctx.fillRect(x, y, 1, 1);
     };
 
-    for (let x = 9; x <= 23; x += 1) {
+    for (let x = 8; x <= 24; x += 1) {
         drawPixel(x, 3, hair);
         drawPixel(x, 4, hair);
     }
-
     for (let x = 10; x <= 22; x += 1) {
         drawPixel(x, 5, hair);
     }
-
     for (let x = 11; x <= 21; x += 1) {
         drawPixel(x, 6, hair);
     }
 
-    for (let x = 11; x <= 21; x += 1) {
-        drawPixel(x, 7, hair);
-    }
-
     for (let x = 10; x <= 22; x += 1) {
-        for (let y = 8; y <= 14; y += 1) {
+        for (let y = 7; y <= 12; y += 1) {
             drawPixel(x, y, skin);
         }
     }
 
+    drawPixel(14, 8, outline);
+    drawPixel(17, 8, outline);
+    drawPixel(15, 9, outline);
+    drawPixel(16, 9, outline);
+    drawPixel(15, 10, outline);
+    drawPixel(17, 10, outline);
+
     for (let x = 11; x <= 21; x += 1) {
-        drawPixel(x, 15, shirt);
-        drawPixel(x, 16, shirt);
-        drawPixel(x, 17, shirt);
-        drawPixel(x, 18, shirt);
+        drawPixel(x, 13, tunic);
+        drawPixel(x, 14, tunic);
+        drawPixel(x, 15, tunic);
+    }
+    for (let x = 13; x <= 19; x += 1) {
+        drawPixel(x, 16, tunic);
     }
 
     for (let x = 12; x <= 20; x += 1) {
+        drawPixel(x, 17, pants);
+        drawPixel(x, 18, pants);
         drawPixel(x, 19, pants);
         drawPixel(x, 20, pants);
-        drawPixel(x, 21, pants);
     }
 
-    for (let x = 11; x <= 13; x += 1) {
-        drawPixel(x, 22, shoes);
+    for (let x = 11; x <= 14; x += 1) {
+        drawPixel(x, 21, boots);
+        drawPixel(x, 22, boots);
     }
-    for (let x = 19; x <= 21; x += 1) {
-        drawPixel(x, 22, shoes);
-    }
-
-    drawPixel(14, 10, outline);
-    drawPixel(18, 10, outline);
-    drawPixel(15, 11, outline);
-    drawPixel(17, 11, outline);
-    drawPixel(16, 12, outline);
-
-    for (let x = 12; x <= 20; x += 1) {
-        drawPixel(x, 18, outline);
+    for (let x = 18; x <= 21; x += 1) {
+        drawPixel(x, 21, boots);
+        drawPixel(x, 22, boots);
     }
 }
 
@@ -191,8 +187,10 @@ function drawEnemySprite() {
     ctx.clearRect(0, 0, 32, 32);
     ctx.imageSmoothingEnabled = false;
 
-    const red = "#a52424";
-    const dark = "#201010";
+    const body = "#9e4d4d";
+    const bodyDark = "#5a2936";
+    const eye = "#f7e9c4";
+    const outline = "#1b0e14";
 
     const drawPixel = (x, y, color) => {
         ctx.fillStyle = color;
@@ -200,32 +198,35 @@ function drawEnemySprite() {
     };
 
     for (let x = 8; x <= 24; x += 1) {
-        drawPixel(x, 7, red);
-        drawPixel(x, 8, red);
-        drawPixel(x, 9, red);
+        drawPixel(x, 7, bodyDark);
+        drawPixel(x, 8, body);
+        drawPixel(x, 9, body);
     }
 
     for (let x = 10; x <= 22; x += 1) {
-        drawPixel(x, 10, dark);
-    }
-
-    for (let x = 12; x <= 20; x += 1) {
-        drawPixel(x, 11, dark);
+        drawPixel(x, 10, body);
+        drawPixel(x, 11, body);
     }
 
     for (let x = 9; x <= 23; x += 1) {
-        drawPixel(x, 12, red);
+        drawPixel(x, 12, bodyDark);
+        drawPixel(x, 13, body);
     }
 
-    for (let x = 8; x <= 24; x += 1) {
-        drawPixel(x, 13, red);
-    }
+    drawPixel(12, 10, eye);
+    drawPixel(19, 10, eye);
+    drawPixel(14, 10, outline);
+    drawPixel(17, 10, outline);
 
-    for (let x = 10; x <= 13; x += 1) {
-        drawPixel(x, 18, dark);
+    for (let x = 11; x <= 21; x += 1) {
+        drawPixel(x, 15, bodyDark);
+        drawPixel(x, 16, bodyDark);
     }
-    for (let x = 19; x <= 22; x += 1) {
-        drawPixel(x, 18, dark);
+    for (let x = 10; x <= 22; x += 1) {
+        drawPixel(x, 17, body);
+    }
+    for (let x = 12; x <= 20; x += 1) {
+        drawPixel(x, 20, bodyDark);
     }
 }
 
