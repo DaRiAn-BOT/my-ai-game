@@ -57,6 +57,14 @@ body {
     gap: 12px;
 }
 
+#continue-game-btn {
+    background: #315c3f;
+}
+
+#continue-game-btn:hover {
+    background: #3c744d;
+}
+
 button {
     border: none;
     border-radius: 10px;

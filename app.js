@@ -28,6 +28,10 @@ const events = [
     }
 ];
 
+function hasSavedState() {
+    return Boolean(localStorage.getItem(STORAGE_KEY));
+}
+
 function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -50,6 +54,13 @@ function loadState() {
 
 function clearSavedState() {
     localStorage.removeItem(STORAGE_KEY);
+}
+
+function refreshMenuButtons() {
+    const continueBtn = document.getElementById("continue-game-btn");
+    const hasSave = hasSavedState();
+
+    continueBtn.classList.toggle("hidden", !hasSave);
 }
 
 function updateUI() {
@@ -108,6 +119,8 @@ function startGame(reset = false) {
         state = loadState();
     }
 
+    refreshMenuButtons();
+
     document.getElementById("main-menu").classList.add("hidden");
     document.getElementById("game-container").classList.remove("hidden");
     document.getElementById("modal-overlay").classList.add("hidden");
@@ -118,6 +131,7 @@ function startGame(reset = false) {
 
 function backToMenu() {
     saveState();
+    refreshMenuButtons();
 
     document.getElementById("game-container").classList.add("hidden");
     document.getElementById("main-menu").classList.remove("hidden");
@@ -139,7 +153,8 @@ function toggleModal(show) {
 window.onload = () => {
     state = loadState();
 
-    document.getElementById("start-game-btn").onclick = () => startGame(false);
+    document.getElementById("start-game-btn").onclick = () => startGame(true);
+    document.getElementById("continue-game-btn").onclick = () => startGame(false);
     document.getElementById("about-btn").onclick = () => toggleModal(true);
     document.getElementById("close-modal-btn").onclick = () => toggleModal(false);
     document.getElementById("restart-game-btn").onclick = () => startGame(true);
@@ -149,5 +164,6 @@ window.onload = () => {
     document.getElementById("modal-overlay").classList.add("hidden");
     document.getElementById("main-menu").classList.remove("hidden");
 
+    refreshMenuButtons();
     updateUI();
 };
