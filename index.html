@@ -5,11 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Управление Королевством</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Подключаем библиотеку Supabase -->
-    <script src="https://jsdelivr.net"></script>
+
+    <!-- Актуальный CDN Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
-    <div class="game-container">
+    <div id="main-menu" class="main-menu">
+        <div class="menu-card">
+            <p class="menu-tag">Стратегия • Выживание • Королевство</p>
+            <h1>Замковые Хроники</h1>
+
+            <div class="menu-actions">
+                <button id="start-game-btn" type="button">Начать правление 👑</button>
+                <button id="about-btn" type="button">Об игре 📜</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-container" class="game-container hidden">
         <header>
             <h1>Замковые Хроники:</h1>
             <div class="stats">
@@ -38,6 +51,22 @@
             </div>
         </footer>
     </div>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button id="close-modal-btn" class="close-modal-btn" type="button">✖</button>
+            <h2>Об игре</h2>
+            <p>
+                Вы — правитель королевства. Каждый день вас ждут новые события.
+                Выбирайте решения, чтобы сохранить золото, армию и еду.
+                Если любой ресурс упадёт до нуля — ваше королевство падёт.
+            </p>
+            <p>
+                Следите за своей стратегией, выживайте и отправляйте лучший результат в рейтинг.
+            </p>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

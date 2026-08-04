@@ -1,7 +1,5 @@
-// Стартовые ресурсы королевства
 let state = { gold: 100, army: 50, food: 80, day: 1 };
 
-// База данных случайных событий
 const events = [
     {
         text: "К границам подошли разбойники и требуют выкуп в 30 золотых. Что сделаете?",
@@ -23,17 +21,9 @@ const events = [
             { text: "Нанять его (-20 🪙, +15 ⚔️)", effect: { gold: -20, army: 15, food: 0 } },
             { text: "Отказать рыцарю", effect: { gold: 0, army: 0, food: 0 } }
         ]
-    },
-    {
-        text: "Крысы пробрались на амбарные склады и уничтожили часть запасов.",
-        choices: [
-            { text: "Выделить золото на очистку (-15 🪙)", effect: { gold: -15, army: 0, food: 0 } },
-            { text: "Ничего не делать (-25 🌾)", effect: { gold: 0, army: 0, food: -25 } }
-        ]
     }
 ];
 
-// Обновление цифр на экране
 function updateUI() {
     document.getElementById('gold').innerText = state.gold;
     document.getElementById('army').innerText = state.army;
@@ -41,7 +31,6 @@ function updateUI() {
     document.getElementById('day').innerText = state.day;
 }
 
-// Показ случайного события
 function showNewEvent() {
     if (state.gold <= 0 || state.army <= 0 || state.food <= 0) {
         endGame();
@@ -52,18 +41,16 @@ function showNewEvent() {
     document.getElementById('event-text').innerText = randomEvent.text;
     
     const container = document.getElementById('choices-container');
-    container.innerHTML = ''; // Очищаем старые кнопки
+    container.innerHTML = '';
 
     randomEvent.choices.forEach(choice => {
         const btn = document.createElement('button');
         btn.innerText = choice.text;
         btn.onclick = () => {
-            // Применяем последствия выбора
             state.gold += choice.effect.gold;
             state.army += choice.effect.army;
             state.food += choice.effect.food;
             state.day += 1;
-            
             updateUI();
             showNewEvent();
         };
@@ -73,13 +60,34 @@ function showNewEvent() {
 
 function endGame() {
     document.getElementById('event-text').innerText = `Ваше правление окончено! Вы продержались дней: ${state.day}.`;
-    document.getElementById('choices-container').innerHTML = '<button onclick="location.reload()">Начать заново 🔄</button>';
+    document.getElementById('choices-container').innerHTML = '<button onclick="backToMenu()">В главное меню 🔄</button>';
 }
 
-// Запуск игры при загрузке страницы
-window.onload = () => {
+// Функции переключения экранов меню
+function startGame() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    state = { gold: 100, army: 50, food: 80, day: 1 };
     updateUI();
     showNewEvent();
-    // Имитация загрузки лидерборда (заглушка для Supabase)
-    document.getElementById('leaderboard-list').innerHTML = `<li>Король Дариан — ${Math.floor(Math.random() * 20) + 10} дней</li>`;
+}
+
+function backToMenu() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'block';
+}
+
+function toggleModal(show) {
+    document.getElementById('modal-overlay').style.display = show ? 'flex' : 'none';
+}
+
+window.onload = () => {
+    // Назначаем события кнопкам меню
+    document.getElementById('start-game-btn').onclick = startGame;
+    document.getElementById('about-btn').onclick = () => toggleModal(true);
+    document.getElementById('close-modal-btn').onclick = () => toggleModal(false);
+    
+    // Прячем игру и модалку изначально
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('modal-overlay').style.display = 'none';
 };

@@ -6,7 +6,28 @@ body {
     padding: 20px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
+
+/* Главное меню */
+.main-menu {
+    max-width: 500px;
+    width: 100%;
+    background: #2a2a2a;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    text-align: center;
+}
+
+.menu-card h1 {
+    font-size: 2.2em;
+    color: #ffd700;
+    margin-bottom: 25px;
+}
+
+/* Игровой контейнер */
 .game-container {
     max-width: 600px;
     width: 100%;
@@ -14,18 +35,20 @@ body {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    margin-top: 40px;
 }
+
 header {
     border-bottom: 2px solid #3a3a3a;
     padding-bottom: 15px;
     margin-bottom: 20px;
 }
+
 .stats {
     display: flex;
     justify-content: space-between;
     font-size: 1.1em;
 }
+
 #event-box {
     background: #333;
     padding: 20px;
@@ -33,29 +56,41 @@ header {
     min-height: 150px;
     margin-bottom: 20px;
 }
-#event-text {
-    font-size: 1.2em;
-    line-height: 1.5;
-}
+
 button {
     display: block;
     width: 100%;
     background: #4a4a4a;
     color: white;
     border: none;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 5px;
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 1em;
-    transition: background 0.2s;
-}
-button:hover {
-    background: #6a6a6a;
-}
-#leaderboard {
-    margin-top: 30px;
-    border-top: 1px solid #3a3a3a;
-    padding-top: 15px;
+    font-size: 1.1em;
+    transition: background 0.2s, transform 0.1s;
 }
 
+button:hover {
+    background: #6a6a6a;
+    transform: scale(1.02);
+}
+
+/* Модальное окно "Об игре" */
+.modal {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+.modal-card {
+    background: #333;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    text-align: center;
+}
