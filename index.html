@@ -24,7 +24,7 @@
 
     <div id="game-container" class="game-container hidden">
         <header>
-            <h1>Замковые Хроники:</h1>
+            <h1>Замковые Хроники</h1>
             <div class="stats">
                 <span>🪙 Золото: <strong id="gold">100</strong></span>
                 <span>⚔️ Армия: <strong id="army">50</strong></span>
@@ -36,15 +36,18 @@
         <main>
             <div id="event-box">
                 <p id="event-text">Загрузка первого события...</p>
-                <div id="choices-container">
-                    <!-- Сюда ИИ будет добавлять кнопки выбора -->
-                </div>
+                <div id="choices-container"></div>
+            </div>
+
+            <div class="control-row">
+                <button id="restart-game-btn" type="button">Новая игра 🔄</button>
+                <button id="back-to-menu-btn" type="button">В главное меню 🏰</button>
             </div>
         </main>
 
         <footer>
             <div id="leaderboard">
-                <h3>Зал Славы (Топ Правителей)</h3>
+                <h3>Зал Славы</h3>
                 <ol id="leaderboard-list">
                     <li>Загрузка рекордов...</li>
                 </ol>
@@ -57,12 +60,13 @@
             <button id="close-modal-btn" class="close-modal-btn" type="button">✖</button>
             <h2>Об игре</h2>
             <p>
-                Вы — правитель королевства. Каждый день вас ждут новые события.
-                Выбирайте решения, чтобы сохранить золото, армию и еду.
-                Если любой ресурс упадёт до нуля — ваше королевство падёт.
+                Вы — правитель королевства. Каждый день вас ждут новые решения,
+                которые повлияют на золото, армию и еду. Если любой ресурс упадёт до нуля,
+                ваше правление закончится.
             </p>
             <p>
-                Следите за своей стратегией, выживайте и отправляйте лучший результат в рейтинг.
+                Стройте стратегию, управлять ресурсами и удерживайте королевство
+                как можно дольше.
             </p>
         </div>
     </div>

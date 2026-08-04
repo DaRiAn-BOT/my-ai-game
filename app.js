@@ -25,10 +25,10 @@ const events = [
 ];
 
 function updateUI() {
-    document.getElementById('gold').innerText = state.gold;
-    document.getElementById('army').innerText = state.army;
-    document.getElementById('food').innerText = state.food;
-    document.getElementById('day').innerText = state.day;
+    document.getElementById("gold").innerText = state.gold;
+    document.getElementById("army").innerText = state.army;
+    document.getElementById("food").innerText = state.food;
+    document.getElementById("day").innerText = state.day;
 }
 
 function showNewEvent() {
@@ -38,13 +38,13 @@ function showNewEvent() {
     }
 
     const randomEvent = events[Math.floor(Math.random() * events.length)];
-    document.getElementById('event-text').innerText = randomEvent.text;
-    
-    const container = document.getElementById('choices-container');
-    container.innerHTML = '';
+    document.getElementById("event-text").innerText = randomEvent.text;
 
-    randomEvent.choices.forEach(choice => {
-        const btn = document.createElement('button');
+    const container = document.getElementById("choices-container");
+    container.innerHTML = "";
+
+    randomEvent.choices.forEach((choice) => {
+        const btn = document.createElement("button");
         btn.innerText = choice.text;
         btn.onclick = () => {
             state.gold += choice.effect.gold;
@@ -59,35 +59,51 @@ function showNewEvent() {
 }
 
 function endGame() {
-    document.getElementById('event-text').innerText = `Ваше правление окончено! Вы продержались дней: ${state.day}.`;
-    document.getElementById('choices-container').innerHTML = '<button onclick="backToMenu()">В главное меню 🔄</button>';
+    document.getElementById("event-text").innerText =
+        `Ваше правление окончено! Вы продержались дней: ${state.day}.`;
+
+    document.getElementById("choices-container").innerHTML =
+        '<button id="back-menu-btn" type="button">В главное меню 🔄</button>';
+
+    document.getElementById("back-menu-btn").onclick = backToMenu;
 }
 
-// Функции переключения экранов меню
 function startGame() {
-    document.getElementById('main-menu').style.display = 'none';
-    document.getElementById('game-screen').style.display = 'block';
+    document.getElementById("main-menu").classList.add("hidden");
+    document.getElementById("game-container").classList.remove("hidden");
+    document.getElementById("modal-overlay").classList.add("hidden");
+
     state = { gold: 100, army: 50, food: 80, day: 1 };
     updateUI();
     showNewEvent();
 }
 
 function backToMenu() {
-    document.getElementById('game-screen').style.display = 'none';
-    document.getElementById('main-menu').style.display = 'block';
+    document.getElementById("game-container").classList.add("hidden");
+    document.getElementById("main-menu").classList.remove("hidden");
+    document.getElementById("modal-overlay").classList.add("hidden");
 }
 
 function toggleModal(show) {
-    document.getElementById('modal-overlay').style.display = show ? 'flex' : 'none';
+    const overlay = document.getElementById("modal-overlay");
+
+    if (show) {
+        overlay.classList.remove("hidden");
+        overlay.classList.add("show");
+    } else {
+        overlay.classList.remove("show");
+        overlay.classList.add("hidden");
+    }
 }
 
 window.onload = () => {
-    // Назначаем события кнопкам меню
-    document.getElementById('start-game-btn').onclick = startGame;
-    document.getElementById('about-btn').onclick = () => toggleModal(true);
-    document.getElementById('close-modal-btn').onclick = () => toggleModal(false);
-    
-    // Прячем игру и модалку изначально
-    document.getElementById('game-screen').style.display = 'none';
-    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById("start-game-btn").onclick = startGame;
+    document.getElementById("about-btn").onclick = () => toggleModal(true);
+    document.getElementById("close-modal-btn").onclick = () => toggleModal(false);
+    document.getElementById("restart-game-btn").onclick = startGame;
+    document.getElementById("back-to-menu-btn").onclick = backToMenu;
+
+    document.getElementById("game-container").classList.add("hidden");
+    document.getElementById("modal-overlay").classList.add("hidden");
+    document.getElementById("main-menu").classList.remove("hidden");
 };
