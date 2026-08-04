@@ -106,6 +106,51 @@ header h1 {
     font-size: 1.05rem;
 }
 
+#map-shell {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    background: #1d1d1d;
+    border: 1px solid rgba(255, 215, 115, 0.2);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+#map-grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+}
+
+.map-cell {
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.map-token {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    font-size: 1.25rem;
+    z-index: 2;
+}
+
+#player-token {
+    background: rgba(79, 128, 255, 0.38);
+}
+
+#enemy-token {
+    background: rgba(255, 70, 70, 0.35);
+}
+
 #event-box {
     background: #2a2a2a;
     border-radius: 12px;
