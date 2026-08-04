@@ -193,8 +193,112 @@ header h1 {
 }
 
 .map-cell {
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    background: rgba(255, 255, 255, 0.02);
+    position: relative;
+    border: 1px solid rgba(24, 37, 16, 0.9);
+    background-color: #5d8c44;
+    background-image:
+        radial-gradient(circle at 20% 20%, rgba(104, 165, 66, 0.85) 0 8%, transparent 9%),
+        radial-gradient(circle at 75% 68%, rgba(75, 121, 55, 0.9) 0 7%, transparent 8%),
+        linear-gradient(180deg, #6ca14a 0%, #4d7b36 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.map-cell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 22% 26%, #f6d870 0 1.5px, transparent 2px),
+        radial-gradient(circle at 60% 70%, #c66e4b 0 1px, transparent 2px),
+        radial-gradient(circle at 82% 18%, #91c96b 0 1px, transparent 2px);
+    opacity: 0.66;
+    pointer-events: none;
+}
+
+#map-grid .map-cell:nth-child(8n + 1),
+#map-grid .map-cell:nth-child(8n + 2),
+#map-grid .map-cell:nth-child(8n + 3),
+#map-grid .map-cell:nth-child(8n + 4),
+#map-grid .map-cell:nth-child(8n + 5),
+#map-grid .map-cell:nth-child(8n + 6),
+#map-grid .map-cell:nth-child(8n + 7),
+#map-grid .map-cell:nth-child(8n + 8) {
+    background-color: #5f8d42;
+}
+
+#map-grid .map-cell:nth-child(14n + 4),
+#map-grid .map-cell:nth-child(14n + 9),
+#map-grid .map-cell:nth-child(14n + 13) {
+    background-color: #3a5a2a;
+    background-image:
+        radial-gradient(circle at 50% 40%, rgba(16, 34, 11, 0.9) 0 10%, transparent 11%),
+        linear-gradient(180deg, #3a5a2a 0%, #273b1d 100%);
+}
+
+#map-grid .map-cell:nth-child(14n + 4)::before,
+#map-grid .map-cell:nth-child(14n + 9)::before,
+#map-grid .map-cell:nth-child(14n + 13)::before {
+    background-image:
+        linear-gradient(90deg, transparent 0 40%, #6e4a25 40% 43%, transparent 43% 57%, #6e4a25 57% 60%, transparent 60%),
+        radial-gradient(circle at 50% 46%, #4a6f31 0 6px, transparent 7px);
+    opacity: 0.9;
+}
+
+#map-grid .map-cell:nth-child(9n + 7),
+#map-grid .map-cell:nth-child(9n + 8),
+#map-grid .map-cell:nth-child(9n + 15),
+#map-grid .map-cell:nth-child(9n + 16),
+#map-grid .map-cell:nth-child(9n + 23) {
+    background-color: #8a6c46;
+    background-image:
+        repeating-linear-gradient(90deg, #8e6d46 0 6px, #7a5b39 6px 12px),
+        repeating-linear-gradient(0deg, transparent 0 5px, rgba(255, 255, 255, 0.06) 5px 6px);
+}
+
+#map-grid .map-cell:nth-child(12n + 3),
+#map-grid .map-cell:nth-child(12n + 10),
+#map-grid .map-cell:nth-child(12n + 18),
+#map-grid .map-cell:nth-child(12n + 24) {
+    background-color: #4a8eaa;
+    background-image:
+        radial-gradient(circle at 44% 32%, rgba(186, 240, 255, 0.9) 0 8%, transparent 9%),
+        radial-gradient(circle at 68% 68%, rgba(100, 189, 231, 0.8) 0 7%, transparent 8%),
+        linear-gradient(180deg, #5da8d2 0%, #2f6b90 100%);
+}
+
+#map-grid .map-cell:nth-child(17n + 5),
+#map-grid .map-cell:nth-child(17n + 11),
+#map-grid .map-cell:nth-child(17n + 19) {
+    background-color: #757c7a;
+    background-image:
+        radial-gradient(circle at 60% 45%, rgba(245, 245, 245, 0.88) 0 7%, transparent 8%),
+        linear-gradient(180deg, #87908a 0%, #5d6664 100%);
+}
+
+#map-grid .map-cell:nth-child(17n + 5)::before,
+#map-grid .map-cell:nth-child(17n + 11)::before,
+#map-grid .map-cell:nth-child(17n + 19)::before {
+    background-image:
+        radial-gradient(circle at 25% 70%, #93a0a1 0 4px, transparent 5px),
+        radial-gradient(circle at 70% 30%, #75817d 0 3px, transparent 4px);
+}
+
+#map-grid .map-cell:nth-child(7n + 2),
+#map-grid .map-cell:nth-child(7n + 6),
+#map-grid .map-cell:nth-child(7n + 10) {
+    background-color: #7a5532;
+    background-image:
+        radial-gradient(circle at 35% 65%, rgba(141, 88, 40, 0.85) 0 6%, transparent 7%),
+        linear-gradient(180deg, #8b633a 0%, #684425 100%);
+}
+
+#map-grid .map-cell:nth-child(7n + 2)::before,
+#map-grid .map-cell:nth-child(7n + 6)::before,
+#map-grid .map-cell:nth-child(7n + 10)::before {
+    background-image:
+        radial-gradient(circle at 70% 30%, rgba(184, 127, 89, 0.8) 0 2px, transparent 3px),
+        linear-gradient(90deg, transparent 0 58%, #6d3c1f 58% 60%, transparent 60%);
+    opacity: 0.72;
 }
 
 .map-token {
