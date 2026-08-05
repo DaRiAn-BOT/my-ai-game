@@ -47,8 +47,8 @@ body {
 
 .main-panel { display: flex; flex-direction: column; gap: 20px; }
 
-.map-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.map-zone { background: #2a2a2a; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #444; font-weight: bold; color: white;}
+.map-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.map-zone { background: #2a2a2a; padding: 12px 5px; border-radius: 8px; text-align: center; border: 1px solid #444; font-weight: bold; color: white; font-size: 0.9em;}
 #zone-castle { border-color: #ffd700; }
 #zone-forest { border-color: #ff4444; }
 #zone-mines { border-color: #44ff44; }
@@ -68,12 +68,14 @@ button { border-radius: 6px; cursor: pointer; font-weight: 600; border: none; tr
 
 .hero-profile { display: flex; align-items: center; gap: 15px; background: #252525; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
 .hero-stats-list div { margin: 4px 0; }
-.inventory-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-.inv-slot { background: #252525; border: 1px dashed #444; padding: 10px 0; text-align: center; font-size: 0.8em; color: #aaa; border-radius: 6px; }
+
+.inventory-grid-vertical { display: flex; flex-direction: column; gap: 8px; }
+.inv-slot-resource { background: #252525; padding: 10px; font-size: 0.9em; border-radius: 6px; border: 1px solid #333; }
+.inv-slot-item { background: #25231a; padding: 12px; font-size: 0.9em; border-radius: 6px; text-align: center; }
 
 .stats-vertical { display: flex; flex-direction: column; gap: 8px; }
 .stat-box { background: #252525; padding: 12px; border-radius: 8px; border: 1px solid #333; font-size: 1.05em; }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100; }
 .modal-card { background: #1e1e1e; padding: 35px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; position: relative; border: 1px solid #333; }
-.close-btn { position: absolute; top: 15px; right: 15px; background: none; color: #888; font-size: 28px; }
+.close-btn { position: absolute; top: 15px; right: 15px; background: none; color: #888; font-size: 28px; border: none; cursor: pointer; }

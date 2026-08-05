@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Замковые Хроники: Великая Зима</title>
+    <title>Замковые Хроники: Великая Зима RPG</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://jsdelivr.net"></script>
 </head>
@@ -11,16 +11,18 @@
 
     <!-- 👑 ЭКРАН 1: ГЛАВНОЕ МЕНЮ -->
     <div id="main-menu" class="menu-card">
-        <span class="subtitle">Стратегия • Оборона • Выживание в мороз</span>
+        <span class="subtitle">Магия • Выживание • Тактика</span>
         <h1>Замковые Хроники 🏰</h1>
         <div class="menu-buttons">
             <button id="to-creation-btn" class="btn-primary">Начать правление 👑</button>
+            <button id="resume-game-btn" class="btn-primary" style="display: none; background: #4caf50; color: white;">Продолжить ⏳</button>
             <button id="about-btn" class="btn-secondary">Об игре Хроник 📜</button>
         </div>
     </div>
 
     <!-- 🎭 ЭКРАН 2: РАСПРЕДЕЛЕНИЕ СТАТОВ -->
-    <div id="creation-screen" class="menu-card" style="display: none;">
+    <div id="creation-screen" class="menu-card" style="display: none; position: relative;">
+        <button class="close-btn" onclick="backToMenu()" style="left: 15px; right: auto;">&times;</button>
         <h2>Подготовка Королевства 🧭</h2>
         <p>Распределите стартовые припасы на обучение вашего правителя:</p>
         <div class="gold-pool">Доступно очков подготовки: <strong id="creation-gold">5</strong> 🪙</div>
@@ -42,10 +44,11 @@
     </div>
 
     <!-- ⚔️ ЭКРАН 3: ИГРОВОЙ ПРОЦЕСС -->
-    <div id="game-screen" class="rpg-layout" style="display: none;">
+    <div id="game-screen" class="rpg-layout" style="display: none; position: relative;">
+        <button class="close-btn" onclick="saveAndExit()" style="position: absolute; top: -10px; left: 10px; font-size: 32px; background: none; color: #ff4444; border: none; font-weight: bold; z-index: 10;">&times;</button>
         
-        <!-- Левая колонка: Профиль Правителя и Рюкзак закромов -->
-        <div class="panel">
+        <!-- Левая колонка: Профиль Правителя и Инвентарь Артефактов -->
+        <div class="panel" style="margin-top: 25px;">
             <h3>Правитель Замка 🧙‍♂️</h3>
             <div class="hero-profile">
                 <div class="hero-stats-list">
@@ -55,20 +58,21 @@
                 </div>
             </div>
             <h4>Склад (Инвентарь)</h4>
-            <div class="inventory-grid">
-                <div class="inv-slot" id="slot-1">🪵 Дрова замка</div>
-                <div class="inv-slot" id="slot-2">✏️ Уголь разведки</div>
-                <div class="inv-slot" id="slot-3">🔧 Пусто</div>
+            <div class="inventory-grid-vertical">
+                <div class="inv-slot-resource" id="slot-1">🪵 Дрова: 2</div>
+                <div class="inv-slot-resource" id="slot-2">✏️ Уголь: 3</div>
+                <div class="inv-slot-item" id="slot-artifact" style="color: #ffd700; border: 1px solid #ffd700; font-weight: bold;">🎒 Экипировка: Нет</div>
             </div>
         </div>
 
         <!-- Центральная колонка: Карта Владений и Квесты -->
-        <div class="panel main-panel">
+        <div class="panel main-panel" style="margin-top: 25px;">
             <h3>Карта Владений 🗺️</h3>
             <div class="map-grid">
-                <button class="map-zone" id="zone-castle" onclick="exploreZone('castle')">🏰 Главная Цитадель<br><small id="status-castle">В безопасности</small></button>
-                <button class="map-zone" id="zone-forest" onclick="exploreZone('forest')">🌲 Окрестный Лес<br><small id="status-forest">Не разведано</small></button>
-                <button class="map-zone" id="zone-mines" onclick="exploreZone('mines')">⛏️ Дальние Шахты<br><small id="status-mines">Не разведано</small></button>
+                <button class="map-zone" id="zone-castle" onclick="exploreZone('castle')">🏰 Цитадель<br><small id="status-castle">В безопасности</small></button>
+                <button class="map-zone" id="zone-forest" onclick="exploreZone('forest')">🌲 Лес<br><small id="status-forest">Не разведано</small></button>
+                <button class="map-zone" id="zone-mines" onclick="exploreZone('mines')">⛏️ Шахты<br><small id="status-mines">Не разведано</small></button>
+                <button class="map-zone" id="zone-market" onclick="openMarket()" style="border-color: #ffd700; background: #2b2512;">⚖️ Рынок<br><small>Торговля</small></button>
             </div>
             <div id="event-box">
                 <p id="event-text">Прикажите разведать заснеженные земли с помощью Уголька или начните сбор ресурсов в Цитадели...</p>
@@ -77,10 +81,11 @@
         </div>
 
         <!-- Правая колонка: Статус Королевства -->
-        <div class="panel">
+        <div class="panel" style="margin-top: 25px;">
             <h3>Статус Замка 🌾</h3>
             <div class="stats-vertical">
                 <div class="stat-box" style="border-color: #ff4444;">🛡️ Стены (Состояние): <strong id="gold">100</strong>%</div>
+                <div class="stat-box" style="border-color: #3498db;">🔮 Магия Цитадели: <strong id="mana">50</strong>%</div>
                 <div class="stat-box">🔥 Тепло в Замке: <strong id="army">100</strong>%</div>
                 <div class="stat-box">🪙 Казна (Золото): <strong id="food">100</strong></div>
                 <div class="stat-box">🌾 Провиант (Еда): <strong id="day">80</strong></div>
@@ -101,7 +106,7 @@
             <button id="close-modal-btn" class="close-btn">&times;</button>
             <h2>Замковые Хроники: Великая Зима 🏰❄️</h2>
             <p>На ваше королевство обрушились вечные морозы и набеги дикарей. Ваша цель — удерживать Цитадель.</p>
-            <p>Отправляйте разведчиков с Углем в Лес и Шахты, чтобы находить дрова и припасы. Следите за Теплом в замке и Прочностью Стен. Навыки Мудрости помогут экономить топливо, а Сила уменьшит урон при защите ворот!</p>
+            <p>Отправляйте разведчиков с Углем в Лес и Шахты, торгуйте на Рынке и копите Магию для защиты крепости!</p>
         </div>
     </div>
 
