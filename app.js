@@ -1,414 +1,213 @@
-const STORAGE_KEY = "kingdom-chronicles-save";
-const MAP_ROWS = 6;
-const MAP_COLS = 8;
+const STORAGE_KEY = "rpg-clean-state";
 
-const createDefaultState = () => ({ gold: 100, army: 50, food: 80, day: 1 });
+function createDefaultState() {
+    return {
+        hero: {
+            name: "Ариэль",
+            avatar: "🧙",
+            strength: 12,
+            wisdom: 14,
+            charisma: 10
+        },
+        resources: {
+            gold: 100,
+            army: 50,
+            food: 80,
+            day: 1
+        },
+        inventory: ["Меч", "Зелье", "Печать"],
+        questIndex: 0,
+        hiddenVictoryUnlocked: false,
+        history: ["Начало пути"]
+    };
+}
 
-let state = createDefaultState();
-let playerPos = { x: 0, y: 0 };
-let enemyPos = { x: 5, y: 2 };
-let currentEncounter = null;
+const state = createDefaultState();
 
-const events = [
+const quests = [
     {
-        text: "К границам подошли разбойники и требуют выкуп в 30 золотых. Что сделаете?",
+        text: "У границы замка сидит торговец. Он предлагает принять купцов, но требует 15 золотых за гарантию безопасности.",
         choices: [
-            { text: "Заплатить им золотом (-30 🪙)", effect: { gold: -30, army: 0, food: 0 } },
-            { text: "Отправить армию в бой (-10 ⚔️)", effect: { gold: 0, army: -10, food: 0 } }
+            { label: "Платить 15 🪙 и открыть ворота", effect: { gold: -15, army: 0, food: 0 }, note: "Город успокоился." },
+            { label: "Отказать и сохранить монеты", effect: { gold: 0, army: 0, food: 0 }, note: "Торговцы ушли недовольные." }
         ]
     },
     {
-        text: "В этом году случился отличный урожай зерна! Торговцы предлагают сделку.",
+        text: "В глубоком лесу слышен шёпот магического стража. Он откроет секрет только тому, кто сильнее 10 силы.",
         choices: [
-            { text: "Продать излишки (+40 🪙, -20 🌾)", effect: { gold: 40, army: 0, food: -20 } },
-            { text: "Засыпать всё в закрома (+30 🌾)", effect: { gold: 0, army: 0, food: 30 } }
+            { label: "Пойти по тропе и потерять время", effect: { gold: 0, army: -5, food: 0 }, note: "Времени ушло много." },
+            { label: "Скрытый путь победы", effect: { gold: 25, army: 0, food: 5 }, note: "Вы открыли тайный путь.", unlock: "strength", check: 10 },
+            { label: "Обратиться к мудрецу", effect: { gold: -10, army: 0, food: 4 }, note: "Мудрость помогла вам.", unlock: "wisdom", check: 12 }
         ]
     },
     {
-        text: "Странствующий рыцарь предлагает свои услуги вашему замку.",
+        text: "Из шахт пришло письмо: там остались рудокопы, и для спасения нужен храбрый выбор.",
         choices: [
-            { text: "Нанять его (-20 🪙, +15 ⚔️)", effect: { gold: -20, army: 15, food: 0 } },
-            { text: "Отказать рыцарю", effect: { gold: 0, army: 0, food: 0 } }
+            { label: "Освободить рудокопов и потратить 10 армии", effect: { gold: 5, army: -10, food: 0 }, note: "Люди вернулись живыми." },
+            { label: "Собрать с шахт редкий артефакт", effect: { gold: 30, army: 0, food: -5 }, note: "Вы добыли редкий артефакт." }
         ]
     },
     {
-        text: "В городе началась эпидемия гриппа среди крестьян. Как вы поступите?",
+        text: "К вам пришли послы и предложили договор на 20 золотых, но они требуют вашей харизмы.",
         choices: [
-            { text: "Выделить золото на лечение (+15 🌾, -20 🪙)", effect: { gold: -20, army: 0, food: 15 } },
-            { text: "Скрыть проблему и надеяться на удачу (-10 ⚔️)", effect: { gold: 0, army: -10, food: 0 } }
+            { label: "Поддержать переговоры", effect: { gold: 20, army: 0, food: 0 }, note: "Харизма помогла убедить послов.", unlock: "charisma", check: 10 },
+            { label: "Отказаться и охранять границы", effect: { gold: 0, army: 5, food: -4 }, note: "Старый порядок остался в силе." }
         ]
     },
     {
-        text: "К вам пришёл торговый караван с редкими тканями и пряностями.",
+        text: "Перед вами финальный выбор: открыть тайную тропу к короне или провести священный ритуал.",
         choices: [
-            { text: "Сделать выгодную закупку (+25 🪙, -10 🌾)", effect: { gold: 25, army: 0, food: -10 } },
-            { text: "Отменить торг и держать запасы (+12 🌾)", effect: { gold: 0, army: 0, food: 12 } }
-        ]
-    },
-    {
-        text: "Небольшой лесной пожар угрожает приграничным деревням. Что делать?",
-        choices: [
-            { text: "Послать отряд пожарных (+20 ⚔️, -15 🪙)", effect: { gold: -15, army: 20, food: 0 } },
-            { text: "Сжечь соседний лес, чтобы остановить огонь (-10 🌾)", effect: { gold: 0, army: 0, food: -10 } }
-        ]
-    },
-    {
-        text: "Люди требуют у вас грандиозный праздник в честь победы. Вкусные пиры стоят ресурсов.",
-        choices: [
-            { text: "Организовать праздник (+20 ⚔️, -25 🌾)", effect: { gold: 0, army: 20, food: -25 } },
-            { text: "Отказать и сохранить запасы (+15 🪙)", effect: { gold: 15, army: 0, food: 0 } }
-        ]
-    },
-    {
-        text: "В замок привезли странного мудреца, который обещает предсказания и удачу.",
-        choices: [
-            { text: "Подарить ему золото и попросить совета (-15 🪙)", effect: { gold: -15, army: 0, food: 0 } },
-            { text: "Попросить его уйти и защитить королевство (+10 ⚔️)", effect: { gold: 0, army: 10, food: 0 } }
+            { label: "Победить через тайную тропу", effect: { gold: 50, army: 10, food: 10 }, note: "Вы получили скрытую победу.", finalWin: true },
+            { label: "Провести ритуал и закрепить власть", effect: { gold: 10, army: 0, food: 5 }, note: "Правление стабилизировалось." }
         ]
     }
 ];
 
-function hasSavedState() {
-    return Boolean(localStorage.getItem(STORAGE_KEY));
-}
-
 function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, playerPos, enemyPos }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 function loadState() {
     try {
-        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        if (!saved || typeof saved !== "object") {
+        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+        if (!raw) {
             return createDefaultState();
         }
 
-        const restored = {
+        return {
             ...createDefaultState(),
-            ...saved
+            ...raw,
+            hero: {
+                ...createDefaultState().hero,
+                ...(raw.hero || {})
+            },
+            resources: {
+                ...createDefaultState().resources,
+                ...(raw.resources || {})
+            },
+            inventory: Array.isArray(raw.inventory) ? raw.inventory : createDefaultState().inventory
         };
-
-        playerPos = saved.playerPos || { x: 0, y: 0 };
-        enemyPos = saved.enemyPos || { x: 5, y: 2 };
-
-        return restored;
     } catch {
         return createDefaultState();
     }
 }
 
-function clearSavedState() {
-    localStorage.removeItem(STORAGE_KEY);
+function syncHeroFromInputs() {
+    const nameInput = document.getElementById("hero-name");
+    const strengthInput = document.getElementById("hero-strength");
+    const wisdomInput = document.getElementById("hero-wisdom");
+    const charismaInput = document.getElementById("hero-charisma");
+
+    state.hero.name = nameInput.value.trim() || "Ариэль";
+    state.hero.strength = Number(strengthInput.value) || 1;
+    state.hero.wisdom = Number(wisdomInput.value) || 1;
+    state.hero.charisma = Number(charismaInput.value) || 1;
 }
 
-function refreshMenuButtons() {
-    const continueBtn = document.getElementById("continue-game-btn");
-    continueBtn.classList.toggle("hidden", !hasSavedState());
+function updateResources() {
+    document.getElementById("gold").textContent = state.resources.gold;
+    document.getElementById("army").textContent = state.resources.army;
+    document.getElementById("food").textContent = state.resources.food;
+    document.getElementById("day").textContent = state.resources.day;
 }
 
-function updateUI() {
-    document.getElementById("gold").innerText = state.gold;
-    document.getElementById("army").innerText = state.army;
-    document.getElementById("food").innerText = state.food;
-    document.getElementById("day").innerText = state.day;
+function updateHeroInputs() {
+    document.getElementById("hero-name").value = state.hero.name;
+    document.getElementById("hero-strength").value = state.hero.strength;
+    document.getElementById("hero-wisdom").value = state.hero.wisdom;
+    document.getElementById("hero-charisma").value = state.hero.charisma;
+    document.getElementById("hero-avatar").textContent = state.hero.avatar;
 }
 
-function drawPlayerSprite() {
-    const canvas = document.getElementById("player-token");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, 32, 32);
-    ctx.imageSmoothingEnabled = false;
-
-    const hair = "#7f4f27";
-    const skin = "#f3c5a0";
-    const tunic = "#4f8f57";
-    const pants = "#3a2f2a";
-    const boots = "#7c4c2f";
-    const outline = "#191919";
-
-    const drawPixel = (x, y, color) => {
-        ctx.fillStyle = color;
-        ctx.fillRect(x, y, 1, 1);
-    };
-
-    for (let x = 8; x <= 24; x += 1) {
-        drawPixel(x, 3, hair);
-        drawPixel(x, 4, hair);
-    }
-    for (let x = 10; x <= 22; x += 1) {
-        drawPixel(x, 5, hair);
-    }
-    for (let x = 11; x <= 21; x += 1) {
-        drawPixel(x, 6, hair);
-    }
-
-    for (let x = 10; x <= 22; x += 1) {
-        for (let y = 7; y <= 12; y += 1) {
-            drawPixel(x, y, skin);
-        }
-    }
-
-    drawPixel(14, 8, outline);
-    drawPixel(17, 8, outline);
-    drawPixel(15, 9, outline);
-    drawPixel(16, 9, outline);
-    drawPixel(15, 10, outline);
-    drawPixel(17, 10, outline);
-
-    for (let x = 11; x <= 21; x += 1) {
-        drawPixel(x, 13, tunic);
-        drawPixel(x, 14, tunic);
-        drawPixel(x, 15, tunic);
-    }
-    for (let x = 13; x <= 19; x += 1) {
-        drawPixel(x, 16, tunic);
-    }
-
-    for (let x = 12; x <= 20; x += 1) {
-        drawPixel(x, 17, pants);
-        drawPixel(x, 18, pants);
-        drawPixel(x, 19, pants);
-        drawPixel(x, 20, pants);
-    }
-
-    for (let x = 11; x <= 14; x += 1) {
-        drawPixel(x, 21, boots);
-        drawPixel(x, 22, boots);
-    }
-    for (let x = 18; x <= 21; x += 1) {
-        drawPixel(x, 21, boots);
-        drawPixel(x, 22, boots);
+function updateInventory() {
+    for (let index = 0; index < 3; index += 1) {
+        document.getElementById(`slot-${index}`).textContent = state.inventory[index] || "—";
     }
 }
 
-function drawEnemySprite() {
-    const canvas = document.getElementById("enemy-token");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, 32, 32);
-    ctx.imageSmoothingEnabled = false;
-
-    const body = "#9e4d4d";
-    const bodyDark = "#5a2936";
-    const eye = "#f7e9c4";
-    const outline = "#1b0e14";
-
-    const drawPixel = (x, y, color) => {
-        ctx.fillStyle = color;
-        ctx.fillRect(x, y, 1, 1);
-    };
-
-    for (let x = 8; x <= 24; x += 1) {
-        drawPixel(x, 7, bodyDark);
-        drawPixel(x, 8, body);
-        drawPixel(x, 9, body);
-    }
-
-    for (let x = 10; x <= 22; x += 1) {
-        drawPixel(x, 10, body);
-        drawPixel(x, 11, body);
-    }
-
-    for (let x = 9; x <= 23; x += 1) {
-        drawPixel(x, 12, bodyDark);
-        drawPixel(x, 13, body);
-    }
-
-    drawPixel(12, 10, eye);
-    drawPixel(19, 10, eye);
-    drawPixel(14, 10, outline);
-    drawPixel(17, 10, outline);
-
-    for (let x = 11; x <= 21; x += 1) {
-        drawPixel(x, 15, bodyDark);
-        drawPixel(x, 16, bodyDark);
-    }
-    for (let x = 10; x <= 22; x += 1) {
-        drawPixel(x, 17, body);
-    }
-    for (let x = 12; x <= 20; x += 1) {
-        drawPixel(x, 20, bodyDark);
-    }
-}
-
-function buildMapGrid() {
-    const grid = document.getElementById("map-grid");
-    grid.innerHTML = "";
-
-    const terrainColors = ["#213020", "#29422b", "#365c36", "#4a6e40"];
-    for (let y = 0; y < MAP_ROWS; y += 1) {
-        for (let x = 0; x < MAP_COLS; x += 1) {
-            const cell = document.createElement("div");
-            cell.className = "map-cell";
-            cell.dataset.x = String(x);
-            cell.dataset.y = String(y);
-            cell.style.background = terrainColors[(x + y) % terrainColors.length];
-            grid.appendChild(cell);
-        }
-    }
-}
-
-function renderMap() {
-    const shell = document.getElementById("map-shell");
-    const shellRect = shell.getBoundingClientRect();
-    const tileWidth = shellRect.width / MAP_COLS;
-    const tileHeight = shellRect.height / MAP_ROWS;
-
-    const playerToken = document.getElementById("player-token");
-    const enemyToken = document.getElementById("enemy-token");
-
-    playerToken.style.left = `${playerPos.x * tileWidth + 6}px`;
-    playerToken.style.top = `${playerPos.y * tileHeight + 6}px`;
-    enemyToken.style.left = `${enemyPos.x * tileWidth + 6}px`;
-    enemyToken.style.top = `${enemyPos.y * tileHeight + 6}px`;
-}
-
-function spawnEnemy() {
-    const nextEnemy = {
-        x: Math.floor(Math.random() * MAP_COLS),
-        y: Math.floor(Math.random() * MAP_ROWS)
-    };
-
-    if (nextEnemy.x === playerPos.x && nextEnemy.y === playerPos.y) {
-        spawnEnemy();
-        return;
-    }
-
-    enemyPos = nextEnemy;
-    renderMap();
-}
-
-function showEncounter() {
-    if (state.gold <= 0 || state.army <= 0 || state.food <= 0) {
-        endGame();
-        return;
-    }
-
-    currentEncounter = events[Math.floor(Math.random() * events.length)];
-    document.getElementById("event-text").innerText = currentEncounter.text;
-
+function renderQuestChoices() {
+    const quest = quests[state.questIndex];
     const container = document.getElementById("choices-container");
     container.innerHTML = "";
 
-    currentEncounter.choices.forEach((choice) => {
-        const btn = document.createElement("button");
-        btn.innerText = choice.text;
-        btn.onclick = () => {
-            state.gold += choice.effect.gold;
-            state.army += choice.effect.army;
-            state.food += choice.effect.food;
-            state.day += 1;
-
-            saveState();
-            updateUI();
-            spawnEnemy();
-            document.getElementById("event-text").innerText = "Вы прошли дальше по карте. Следующее событие уже близко.";
-            container.innerHTML = "";
-        };
-        container.appendChild(btn);
-    });
-}
-
-function movePlayer(dx, dy) {
-    const nextX = Math.max(0, Math.min(MAP_COLS - 1, playerPos.x + dx));
-    const nextY = Math.max(0, Math.min(MAP_ROWS - 1, playerPos.y + dy));
-
-    playerPos = { x: nextX, y: nextY };
-    renderMap();
-
-    if (playerPos.x === enemyPos.x && playerPos.y === enemyPos.y) {
-        showEncounter();
-    }
-}
-
-function endGame() {
-    saveState();
-
-    document.getElementById("event-text").innerText =
-        `Ваше правление окончено! Вы продержались дней: ${state.day}.`;
-
-    document.getElementById("choices-container").innerHTML =
-        '<button id="back-menu-btn" type="button">В главное меню 🔄</button>';
-
-    document.getElementById("back-menu-btn").onclick = backToMenu;
-}
-
-function startGame(reset = false) {
-    if (reset) {
-        state = createDefaultState();
-        clearSavedState();
-    } else {
-        state = loadState();
+    if (!quest) {
+        document.getElementById("quest-text").textContent = "Вы завершили путь. Королевство под вашим началом.";
+        return;
     }
 
-    playerPos = { x: 0, y: 0 };
-    spawnEnemy();
-    refreshMenuButtons();
+    document.getElementById("quest-text").textContent = quest.text;
 
-    document.getElementById("main-menu").classList.add("hidden");
-    document.getElementById("game-container").classList.remove("hidden");
-    document.getElementById("modal-overlay").classList.add("hidden");
+    quest.choices.forEach((choice) => {
+        const shouldShow = !choice.unlock ||
+            (choice.unlock === "strength" && state.hero.strength > choice.check) ||
+            (choice.unlock === "wisdom" && state.hero.wisdom > choice.check) ||
+            (choice.unlock === "charisma" && state.hero.charisma > choice.check);
 
-    updateUI();
-    document.getElementById("event-text").innerText = "Идите по карте, чтобы встретить события и нападения.";
-    document.getElementById("choices-container").innerHTML = "";
-    renderMap();
-}
-
-function backToMenu() {
-    saveState();
-    refreshMenuButtons();
-
-    document.getElementById("game-container").classList.add("hidden");
-    document.getElementById("main-menu").classList.remove("hidden");
-    document.getElementById("modal-overlay").classList.add("hidden");
-}
-
-function toggleModal(show) {
-    const overlay = document.getElementById("modal-overlay");
-
-    if (show) {
-        overlay.classList.remove("hidden");
-        overlay.classList.add("show");
-    } else {
-        overlay.classList.remove("show");
-        overlay.classList.add("hidden");
-    }
-}
-
-window.onload = () => {
-    state = loadState();
-    buildMapGrid();
-    drawPlayerSprite();
-    drawEnemySprite();
-    renderMap();
-
-    document.getElementById("start-game-btn").onclick = () => startGame(true);
-    document.getElementById("continue-game-btn").onclick = () => startGame(false);
-    document.getElementById("about-btn").onclick = () => toggleModal(true);
-    document.getElementById("close-modal-btn").onclick = () => toggleModal(false);
-    document.getElementById("restart-game-btn").onclick = () => startGame(true);
-    document.getElementById("back-to-menu-btn").onclick = backToMenu;
-
-    document.addEventListener("keydown", (event) => {
-        if (document.getElementById("game-container").classList.contains("hidden")) {
+        if (!shouldShow) {
             return;
         }
 
-        if (event.key === "ArrowUp") {
-            movePlayer(0, -1);
-        } else if (event.key === "ArrowDown") {
-            movePlayer(0, 1);
-        } else if (event.key === "ArrowLeft") {
-            movePlayer(-1, 0);
-        } else if (event.key === "ArrowRight") {
-            movePlayer(1, 0);
-        }
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = choice.label;
+        button.onclick = () => applyChoice(choice);
+        container.appendChild(button);
     });
+}
 
-    document.getElementById("game-container").classList.add("hidden");
-    document.getElementById("modal-overlay").classList.add("hidden");
-    document.getElementById("main-menu").classList.remove("hidden");
+function applyChoice(choice) {
+    syncHeroFromInputs();
 
-    refreshMenuButtons();
-    updateUI();
-};
+    if (choice.effect.gold !== undefined) {
+        state.resources.gold += choice.effect.gold;
+    }
+    if (choice.effect.army !== undefined) {
+        state.resources.army += choice.effect.army;
+    }
+    if (choice.effect.food !== undefined) {
+        state.resources.food += choice.effect.food;
+    }
+
+    state.resources.day += 1;
+    state.history.push(choice.note || "Решение принято.");
+
+    if (choice.finalWin) {
+        state.hiddenVictoryUnlocked = true;
+    }
+
+    state.questIndex += 1;
+    saveState();
+    render();
+}
+
+function renderLeaderboard() {
+    const list = document.getElementById("leaderboard-list");
+    list.innerHTML = "";
+
+    state.history.slice(-3).reverse().forEach((entry) => {
+        const li = document.createElement("li");
+        li.textContent = entry;
+        list.appendChild(li);
+    });
+}
+
+function render() {
+    syncHeroFromInputs();
+    updateHeroInputs();
+    updateResources();
+    updateInventory();
+    renderQuestChoices();
+    renderLeaderboard();
+    saveState();
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+    const loaded = loadState();
+    Object.assign(state, loaded);
+    render();
+
+    document.getElementById("hero-name").addEventListener("input", render);
+    document.getElementById("hero-strength").addEventListener("input", render);
+    document.getElementById("hero-wisdom").addEventListener("input", render);
+    document.getElementById("hero-charisma").addEventListener("input", render);
+});

@@ -3,103 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление Королевством</title>
+    <title>Замковые Хроники</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
-    <!-- Актуальный CDN Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
-    <div id="main-menu" class="main-menu">
-        <div class="menu-card">
-            <p class="menu-tag">Стратегия • Выживание • Королевство</p>
-            <h1>Замковые Хроники</h1>
+    <main id="game-container" class="game-container">
+        <div class="game-layout">
+            <section class="panel-card left-column">
+                <div class="panel-title">Профиль героя</div>
 
-            <div class="menu-actions">
-                <button id="start-game-btn" type="button">Начать правление 👑</button>
-                <button id="continue-game-btn" class="hidden" type="button">Продолжить правление ⏩</button>
-                <button id="about-btn" type="button">Об игре 📜</button>
-            </div>
+                <div class="hero-header">
+                    <div id="hero-avatar" class="hero-avatar">🧙</div>
+                    <label class="hero-name-field">
+                        <span>Имя</span>
+                        <input id="hero-name" type="text" value="Ариэль" maxlength="18">
+                    </label>
+                </div>
+
+                <div class="stats-grid">
+                    <label class="stat-row">
+                        <span>💪 Сила</span>
+                        <input id="hero-strength" type="number" min="1" max="20" value="12">
+                    </label>
+                    <label class="stat-row">
+                        <span>🧠 Мудрость</span>
+                        <input id="hero-wisdom" type="number" min="1" max="20" value="14">
+                    </label>
+                    <label class="stat-row">
+                        <span>👑 Харизма</span>
+                        <input id="hero-charisma" type="number" min="1" max="20" value="10">
+                    </label>
+                </div>
+
+                <div class="panel-title inventory-title">Инвентарь</div>
+                <div class="inventory-grid">
+                    <div class="inventory-slot"><span>Слот 1</span><strong id="slot-0">Меч</strong></div>
+                    <div class="inventory-slot"><span>Слот 2</span><strong id="slot-1">Зелье</strong></div>
+                    <div class="inventory-slot"><span>Слот 3</span><strong id="slot-2">Печать</strong></div>
+                </div>
+            </section>
+
+            <section class="panel-card center-column">
+                <div class="panel-title">Карта регионов</div>
+                <div class="region-grid">
+                    <div class="region-pill"><span>🏰</span><strong>Замок</strong></div>
+                    <div class="region-pill"><span>🌲</span><strong>Лес</strong></div>
+                    <div class="region-pill"><span>⛏️</span><strong>Шахты</strong></div>
+                </div>
+
+                <div class="quest-card">
+                    <p id="quest-text" class="quest-text">Вы вступаете в путь.</p>
+                    <div id="choices-container" class="choices-container"></div>
+                </div>
+            </section>
+
+            <aside class="panel-card right-column">
+                <div class="panel-title">Ресурсы королевства</div>
+                <div class="resource-list">
+                    <div class="resource-pill"><span>🪙</span><strong id="gold">100</strong></div>
+                    <div class="resource-pill"><span>⚔️</span><strong id="army">50</strong></div>
+                    <div class="resource-pill"><span>🌾</span><strong id="food">80</strong></div>
+                    <div class="resource-pill"><span>📅</span><strong id="day">1</strong></div>
+                </div>
+
+                <div class="leaderboard">
+                    <h3>Зал Славы</h3>
+                    <ol id="leaderboard-list">
+                        <li>Ариэль — первый шаг</li>
+                        <li>Волшебный Путь</li>
+                    </ol>
+                </div>
+            </aside>
         </div>
-    </div>
-
-    <div id="game-container" class="game-container hidden">
-        <header>
-            <div class="title-box">
-                <p class="title-kicker">Медieval Dawn</p>
-                <h1>Замковые Хроники</h1>
-            </div>
-
-            <div class="stats">
-                <div class="resource-pill">
-                    <span class="resource-icon">🪙</span>
-                    <span class="resource-label">Золото</span>
-                    <strong id="gold">100</strong>
-                </div>
-                <div class="resource-pill">
-                    <span class="resource-icon">⚔️</span>
-                    <span class="resource-label">Армия</span>
-                    <strong id="army">50</strong>
-                </div>
-                <div class="resource-pill">
-                    <span class="resource-icon">🌾</span>
-                    <span class="resource-label">Еда</span>
-                    <strong id="food">80</strong>
-                </div>
-                <div class="resource-pill">
-                    <span class="resource-icon">📅</span>
-                    <span class="resource-label">День</span>
-                    <strong id="day">1</strong>
-                </div>
-            </div>
-        </header>
-
-        <main>
-            <div id="map-shell">
-                <div id="map-grid"></div>
-                <canvas id="player-token" class="map-token" width="32" height="32"></canvas>
-                <canvas id="enemy-token" class="map-token" width="32" height="32"></canvas>
-            </div>
-
-            <div id="event-box" class="parchment-panel">
-                <p id="event-text">Идите по карте, чтобы встретить события и нападения.</p>
-                <div id="choices-container"></div>
-            </div>
-
-            <div class="control-row">
-                <button id="restart-game-btn" type="button">Новая игра 🔄</button>
-                <button id="back-to-menu-btn" type="button">В главное меню 🏰</button>
-            </div>
-        </main>
-
-        <footer>
-            <div id="leaderboard">
-                <h3>Зал Славы</h3>
-                <ol id="leaderboard-list">
-                    <li>Загрузка рекордов...</li>
-                </ol>
-            </div>
-        </footer>
-    </div>
-
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <div class="modal-card">
-            <button id="close-modal-btn" class="close-modal-btn" type="button">✖</button>
-            <h2>Об игре</h2>
-            <p>
-                Вы — правитель королевства. Каждый день вас ждут новые решения,
-                которые повлияют на золото, армию и еду. Если любой ресурс упадёт до нуля,
-                ваше правление закончится.
-            </p>
-            <p>
-                Стройте стратегию, управлять ресурсами и удерживайте королевство
-                как можно дольше.
-            </p>
-        </div>
-    </div>
+    </main>
 
     <script src="app.js"></script>
 </body>
