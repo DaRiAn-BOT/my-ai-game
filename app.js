@@ -1,493 +1,160 @@
-const STORAGE_KEY = "castle-defense-survival-v1";
+let state = { walls: 100, warmth: 100, gold: 100, food: 80, day: 1, coal: 3, wood: 2 };
+let hero = { strength: 0, wisdom: 0, charisma: 0 };
+let explored = { castle: true, forest: false, mines: false };
 
-const ITEM_LIBRARY = {
-    sword: {
-        name: "Меч",
-        effect: { strength: 3 }
-    },
-    amulet: {
-        name: "Амулет",
-        effect: { wisdom: 3 }
-    },
-    crown: {
-        name: "Корона",
-        effect: { charisma: 3 }
-    }
+const zoneEvents = {
+    castle: [
+        {
+            text: "В замке мирный день, но Главный Камин догорает. Жители просят выделить ресурсы на обогрев цитадели.",
+            choices: [
+                { text: "Пусть мерзнут, беречь припасы", req: null, effect: { walls: 0, warmth: -30, gold: 0, food: -5 } },
+                { text: "Бросить дрова в камин (-1 дрова, +40% Тепла)", req: null, effect: { walls: 0, warmth: 40, gold: 0, food: 0 }, useWood: true },
+                { text: "[Мудрость 2+] Перестроить дымоход, увеличив теплоотдачу без дров (+20% Тепла)", req: { type: "wisdom", val: 2 }, effect: { walls: 0, warmth: 20, gold: 0, food: 0 } }
+            ]
+        }
+    ],
+    forest: [
+        {
+            text: "В заснеженном Окрестном Лесу разведчики наткнулись на заброшенный склад лесорубов, но вокруг бродят голодные волки!",
+            choices: [
+                { text: "Вступить в бой без подготовки (-20% Стен/Защиты)", req: null, effect: { walls: -20, warmth: -10, gold: 0, food: 20 } },
+                { text: "[Сила 3+] Лично возглавить вылазку и отбить склад (+2 дров, +20 еды)", req: { type: "strength", val: 3 }, effect: { walls: 0, warmth: -5, gold: 0, food: 20 }, giveWood: 2 }
+            ]
+        }
+    ],
+    mines: [
+        {
+            text: "В Дальних Шахтах произошел обвал из-за вечной мерзлоты. Гномы заперты в забое с золотом.",
+            choices: [
+                { text: "Взорвать проход за казенный счет (-30 золота)", req: null, effect: { walls: 0, warmth: -10, gold: -30, food: 0 } },
+                { text: "[Мудрость 3+] Рассчитать правильные точки опор и разобрать завал руками (+50 золота)", req: { type: "wisdom", val: 3 }, effect: { walls: 0, warmth: -10, gold: 50, food: 0 } }
+            ]
+        }
+    ]
 };
 
-const ENEMY_TEMPLATES = [
-    "Гоблины-налётчики",
-    "Огры-разрушители",
-    "Тёмные лучники",
-    "Лесные чудовища",
-    "Бешеные орды"
-];
-
-function createDefaultState() {
-    return {
-        hero: {
-            name: "Ариэль",
-            avatar: "🧙",
-            strength: 0,
-            wisdom: 0,
-            charisma: 0
-        },
-        resources: {
-            gold: 100,
-            army: 50,
-            food: 80,
-            wallIntegrity: 100,
-            phase: "day",
-            energy: 2,
-            night: 1
-        },
-        inventory: [null, null, null],
-        activeRegion: null,
-        activeWave: null,
-        lastActionMessage: "Вы вступаете в путь.",
-        history: ["Начало пути"],
-        gameOver: false,
-        victory: false,
-        gameStarted: false
-    };
-}
-
-const state = createDefaultState();
-
-function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
-
-function loadState() {
-    try {
-        const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-        if (!raw) {
-            return createDefaultState();
-        }
-
-        return {
-            ...createDefaultState(),
-            ...raw,
-            hero: {
-                ...createDefaultState().hero,
-                ...(raw.hero || {})
-            },
-            resources: {
-                ...createDefaultState().resources,
-                ...(raw.resources || {})
-            },
-            inventory: Array.isArray(raw.inventory) ? raw.inventory : createDefaultState().inventory,
-            history: Array.isArray(raw.history) ? raw.history : createDefaultState().history
-        };
-    } catch {
-        return createDefaultState();
+function upgradeStat(statName) {
+    if (state.coal > 0) {
+        state.coal -= 1;
+        hero[statName] += 1;
+        document.getElementById('creation-gold').innerText = state.coal;
+        document.getElementById(`creation-${statName}`).innerText = hero[statName];
+    } else {
+        alert("Очки подготовки закончились!");
     }
 }
 
-function showScreen(screenId) {
-    document.getElementById("main-menu").style.display = screenId === "main-menu" ? "block" : "none";
-    document.getElementById("creation-screen").style.display = screenId === "creation-screen" ? "block" : "none";
-    document.getElementById("game-screen").style.display = screenId === "game-screen" ? "block" : "none";
+function updateUI() {
+    document.getElementById('gold').innerText = state.walls;
+    document.getElementById('army').innerText = state.warmth;
+    document.getElementById('food').innerText = state.gold;
+    document.getElementById('day').innerText = state.food;
+    document.getElementById('game-day').innerText = state.day;
+
+    document.getElementById('game-strength').innerText = hero.strength;
+    document.getElementById('game-wisdom').innerText = hero.wisdom;
+    document.getElementById('game-charisma').innerText = hero.charisma;
+    
+    document.getElementById('slot-1').innerText = `🪵 Дрова: ${state.wood}`;
+    document.getElementById('slot-2').innerText = `✏️ Уголь: ${state.coal}`;
 }
 
-function getBonusFromItems() {
-    return state.inventory.reduce((accumulator, item) => {
-        if (!item || !item.equipped) {
-            return accumulator;
-        }
-
-        Object.entries(item.effect).forEach(([key, value]) => {
-            accumulator[key] = (accumulator[key] || 0) + value;
-        });
-        return accumulator;
-    }, { strength: 0, wisdom: 0, charisma: 0 });
-}
-
-function getEffectiveStats() {
-    const bonus = getBonusFromItems();
-    return {
-        strength: state.hero.strength + bonus.strength,
-        wisdom: state.hero.wisdom + bonus.wisdom,
-        charisma: state.hero.charisma + bonus.charisma
-    };
-}
-
-function clamp(value, min, max) {
-    return Math.max(min, Math.min(max, value));
-}
-
-function renderMapButtons() {
-    updateGameScreen();
-}
-
-function updateCreationScreen() {
-    document.getElementById("creation-strength").textContent = state.hero.strength;
-    document.getElementById("creation-wisdom").textContent = state.hero.wisdom;
-    document.getElementById("creation-charisma").textContent = state.hero.charisma;
-    document.getElementById("creation-gold").textContent = state.resources.gold;
-}
-
-function updateGameScreen() {
-    const effectiveStats = getEffectiveStats();
-
-    document.getElementById("hero-avatar").textContent = state.hero.avatar;
-    document.getElementById("hero-strength").textContent = effectiveStats.strength;
-    document.getElementById("hero-wisdom").textContent = effectiveStats.wisdom;
-    document.getElementById("hero-charisma").textContent = effectiveStats.charisma;
-
-    document.getElementById("gold").textContent = state.resources.gold;
-    document.getElementById("army").textContent = state.resources.army;
-    document.getElementById("food").textContent = state.resources.food;
-    document.getElementById("wall").textContent = `${Math.round(state.resources.wallIntegrity)}%`;
-    document.getElementById("phase").textContent = state.resources.phase === "day" ? "День" : "Ночь";
-    document.getElementById("energy").textContent = String(state.resources.energy);
-    document.getElementById("night").textContent = `Ночь ${state.resources.night}`;
-
-    document.querySelectorAll(".play-upgrade-btn").forEach((button) => {
-        button.disabled = state.resources.gold < 50;
-    });
-
-    document.querySelectorAll(".inventory-slot").forEach((button, index) => {
-        const item = state.inventory[index];
-        const content = item ? `${item.name}${item.equipped ? " • Экип." : ""}` : "—";
-        button.classList.toggle("filled", Boolean(item));
-        button.classList.toggle("equipped", Boolean(item && item.equipped));
-        document.getElementById(`slot-${index}`).textContent = content;
-    });
-
-    document.querySelectorAll(".zone-button").forEach((button) => {
-        button.disabled = state.resources.phase !== "day" || state.gameOver || state.victory;
-        button.classList.toggle("active", state.activeRegion === button.dataset.region);
-    });
-
-    const nightButton = document.getElementById("night-day-btn");
-    nightButton.style.display = state.resources.phase === "day" && state.resources.energy <= 0 ? "block" : "none";
-}
-
-function renderQuestChoices() {
-    const container = document.getElementById("choices-container");
-    container.innerHTML = "";
-
-    if (state.gameOver) {
-        document.getElementById("quest-text").textContent = "Поражение: королевство рухнуло. Обновите страницу и начните заново.";
-        return;
-    }
-
-    if (state.victory) {
-        document.getElementById("quest-text").textContent = "Победа: вы пережили 15 ночей осады и удержали замок.";
-        return;
-    }
-
-    if (state.resources.phase === "day") {
-        document.getElementById("quest-text").textContent = state.lastActionMessage;
-        return;
-    }
-
-    const wave = state.activeWave;
-    document.getElementById("quest-text").textContent = wave.text;
-
-    const actions = [
-        {
-            label: "Оборона на стенах",
-            mode: "wall"
-        },
-        {
-            label: "Вылазка армии",
-            mode: "army"
-        },
-        {
-            label: "Магический барьер",
-            mode: "barrier"
-        }
-    ];
-
-    actions.forEach((action) => {
-        const button = document.createElement("button");
-        button.type = "button";
-
-        if (action.mode === "barrier") {
-            const effective = getEffectiveStats();
-            if (effective.wisdom >= 4) {
-                button.classList.add("choice-ready");
-                button.textContent = action.label;
-            } else {
-                button.disabled = true;
-                button.textContent = "Заблокировано: Мудрость ≥ 4";
-            }
+function exploreZone(zoneName) {
+    if (!explored[zoneName]) {
+        if (state.coal > 0) {
+            state.coal -= 1;
+            explored[zoneName] = true;
+            document.getElementById(`status-${zoneName}`).innerText = "Разведано 📝";
+            document.getElementById(`status-${zoneName}`).style.color = "#44ff44";
+            alert("Вы потратили 1 Уголь и зарисовали регион на тактической карте!");
         } else {
-            button.classList.add("choice-ready");
-            button.textContent = action.label;
-        }
-
-        button.onclick = () => resolveNightChoice(action.mode);
-        container.appendChild(button);
-    });
-}
-
-function addInventoryItem(itemTemplate) {
-    const freeSlot = state.inventory.findIndex((item) => item === null);
-    if (freeSlot === -1) {
-        state.history.push("Инвентарь полон — сначала снимите предмет или экипируйте его.");
-        return;
-    }
-
-    state.inventory[freeSlot] = {
-        ...itemTemplate,
-        equipped: false
-    };
-}
-
-function equipSlot(index) {
-    const item = state.inventory[index];
-    if (!item) {
-        return;
-    }
-
-    item.equipped = !item.equipped;
-    updateGameScreen();
-    renderLeaderboard();
-    saveState();
-}
-
-function renderLeaderboard() {
-    const list = document.getElementById("leaderboard-list");
-    list.innerHTML = "";
-
-    state.history.slice(-3).reverse().forEach((entry) => {
-        const item = document.createElement("li");
-        item.textContent = entry;
-        list.appendChild(item);
-    });
-}
-
-function upgradeStat(stat) {
-    const fee = state.gameStarted ? 50 : 20;
-    if (state.resources.gold < fee) {
-        return;
-    }
-
-    state.resources.gold -= fee;
-    state.hero[stat] += 1;
-    updateCreationScreen();
-    updateGameScreen();
-    saveState();
-}
-
-function performDayAction(regionId) {
-    if (state.resources.phase !== "day" || state.gameOver || state.victory) {
-        return;
-    }
-
-    if (state.resources.energy <= 0) {
-        return;
-    }
-
-    state.resources.energy -= 1;
-    state.activeRegion = regionId;
-
-    if (regionId === "castle") {
-        if (state.resources.gold < 20) {
-            state.lastActionMessage = "У вас не хватает золота для укрепления стен.";
-        } else {
-            state.resources.gold -= 20;
-            state.resources.wallIntegrity = clamp(state.resources.wallIntegrity + 25, 0, 100);
-            state.lastActionMessage = "Вы укрепили стены: +25% прочности.";
-            state.history.push("Замок укреплён, стены получили свежие брёвна и щиты.");
-        }
-    }
-
-    if (regionId === "forest") {
-        if (state.resources.army < 10) {
-            state.lastActionMessage = "В лесу нет армии для безопасного сбора припасов.";
-            state.resources.energy += 1;
-        } else {
-            state.resources.army -= 10;
-            state.resources.food += 40;
-            state.lastActionMessage = "Лес дал дополнительный запас еды, но вы потратили часть армии.";
-            state.history.push("Сбор припасов прошёл успешно: еда и провизия запасены.");
-        }
-    }
-
-    if (regionId === "mines") {
-        state.resources.gold += 40;
-        state.lastActionMessage = "Шахты принесли новую руду и 40 золота.";
-        state.history.push("Добыча руды завершилась удачно. Вы получили дополнительное золото.");
-    }
-
-    if (state.resources.energy <= 0) {
-        state.lastActionMessage = "Энергия правителя исчерпана. Завершите день и встречайте ночь.";
-    }
-
-    checkGameStatus();
-    renderMapButtons();
-    renderQuestChoices();
-    updateGameScreen();
-    renderLeaderboard();
-    saveState();
-}
-
-function startNight() {
-    if (state.resources.phase !== "day" || state.gameOver || state.victory) {
-        return;
-    }
-
-    state.resources.phase = "night";
-    state.activeWave = generateNightWave(state.resources.night);
-    state.lastActionMessage = state.activeWave.text;
-    state.history.push(`Ночь ${state.resources.night}: ${state.activeWave.text}`);
-    renderMapButtons();
-    renderQuestChoices();
-    updateGameScreen();
-    renderLeaderboard();
-    saveState();
-}
-
-function generateNightWave(nightNumber) {
-    const enemyName = ENEMY_TEMPLATES[Math.floor(Math.random() * ENEMY_TEMPLATES.length)];
-    const bossNight = nightNumber === 15;
-
-    if (bossNight) {
-        return {
-            text: `Ночь 15: На замок нападают Финальный Босс — Разрушитель Короны!`,
-            wallDamage: 26 + nightNumber * 2,
-            armyDamage: 20 + nightNumber * 2,
-            boss: true
-        };
-    }
-
-    return {
-        text: `Ночь ${nightNumber}: На замок нападают ${enemyName}!`,
-        wallDamage: 10 + nightNumber * 3,
-        armyDamage: 8 + nightNumber * 2,
-        boss: false
-    };
-}
-
-function resolveNightChoice(mode) {
-    if (state.resources.phase !== "night" || state.gameOver || state.victory) {
-        return;
-    }
-
-    const wave = state.activeWave;
-    const effectiveStats = getEffectiveStats();
-    let wallDamage = wave.wallDamage;
-    let armyDamage = wave.armyDamage;
-    let message = "";
-
-    if (mode === "wall") {
-        const strengthReduction = Math.min(18, effectiveStats.strength * 4);
-        wallDamage = Math.max(0, wave.wallDamage - strengthReduction);
-        state.resources.wallIntegrity = clamp(state.resources.wallIntegrity - wallDamage, 0, 100);
-        message = `Оборона на стенах ослабила удар. Стена потеряла ${wallDamage}% прочности.`;
-    }
-
-    if (mode === "army") {
-        const charismaReduction = Math.min(18, effectiveStats.charisma * 4);
-        armyDamage = Math.max(0, wave.armyDamage - charismaReduction);
-        state.resources.army = clamp(state.resources.army - armyDamage, 0, 999);
-        message = `Вылазка армии поглотила часть натиска. Армия потеряла ${armyDamage} единиц.`;
-    }
-
-    if (mode === "barrier") {
-        if (effectiveStats.wisdom >= 4) {
-            message = "Магический барьер полностью нейтрализовал угрозу этой ночи.";
-            wallDamage = 0;
-            armyDamage = 0;
-        } else {
+            alert("У вас нет Угля разведки на складе, чтобы открыть этот регион!");
             return;
         }
     }
-
-    if (mode === "wall" || mode === "army") {
-        state.resources.wallIntegrity = clamp(state.resources.wallIntegrity, 0, 100);
+    
+    const regionEvents = zoneEvents[zoneName];
+    const randomEvent = regionEvents[Math.floor(Math.random() * regionEvents.length)];
+    
+    // Пошаговое ухудшение от мороза
+    state.warmth = Math.max(0, state.warmth - 15);
+    state.food = Math.max(0, state.food - 10);
+    state.day += 1;
+    
+    // Если в замке холодно — рушатся стены и падает дух
+    if (state.warmth <= 0) {
+        state.walls = Math.max(0, state.walls - 20);
+    }
+    
+    updateUI();
+    
+    if (state.walls <= 0 || state.food <= 0) {
+        endGame();
+        return;
     }
 
-    state.lastActionMessage = message;
-    state.history.push(message);
+    document.getElementById('event-text').innerText = randomEvent.text;
+    const container = document.getElementById('choices-container');
+    container.innerHTML = '';
 
-    state.resources.phase = "day";
-    state.resources.energy = 2;
-    state.resources.night += 1;
-    state.activeWave = null;
-    state.activeRegion = null;
+    randomEvent.choices.forEach(choice => {
+        let canChoose = true;
+        if (choice.useWood && state.wood <= 0) canChoose = false;
+        if (choice.req && hero[choice.req.type] < choice.req.val) canChoose = false;
 
-    checkGameStatus();
-    renderMapButtons();
-    renderQuestChoices();
-    updateGameScreen();
-    renderLeaderboard();
-    saveState();
+        const btn = document.createElement('button');
+        btn.innerText = choice.text;
+        
+        if (!canChoose) {
+            btn.style.opacity = '0.3';
+            btn.style.cursor = 'not-allowed';
+            btn.innerText += choice.useWood ? " 🔒 (Нет дров)" : " 🔒 (Мало навыков)";
+        } else {
+            btn.onclick = () => {
+                if (choice.useWood) state.wood -= 1;
+                if (choice.giveWood) state.wood += choice.giveWood;
+                
+                state.walls = Math.min(100, Math.max(0, state.walls + choice.effect.walls));
+                state.warmth = Math.min(100, Math.max(0, state.warmth + choice.effect.warmth));
+                state.gold = Math.max(0, state.gold + choice.effect.gold);
+                state.food = Math.max(0, state.food + choice.effect.food);
+                
+                updateUI();
+                document.getElementById('event-text').innerText = "Приказ исполнен. Выберите зону на карте владений для следующего тактического шага.";
+                container.innerHTML = '';
+            };
+        }
+        container.appendChild(btn);
+    });
 }
 
-function checkGameStatus() {
-    if (state.resources.wallIntegrity <= 0 || state.resources.army <= 0 || state.resources.food <= 0 || state.resources.gold <= 0) {
-        state.gameOver = true;
-        state.resources.phase = "day";
-    }
-
-    if (state.resources.night > 15 && !state.gameOver) {
-        state.victory = true;
-        state.resources.phase = "day";
-        state.history.push("Вы пережили 15 ночей осады и удержали замок.");
-    }
+function endGame() {
+    document.getElementById('event-text').innerText = "Ваша Цитадель пала под натиском ледяной бури и голода. Правление окончено.";
+    document.getElementById('choices-container').innerHTML = '<button class="btn-primary" onclick="backToMenu()">В главное меню 🔄</button>';
 }
 
-function startGame() {
-    state.gameStarted = true;
-    showScreen("game-screen");
-    updateCreationScreen();
-    updateGameScreen();
-    renderMapButtons();
-    renderQuestChoices();
-    renderLeaderboard();
-    saveState();
+function toCreationScreen() {
+    document.getElementById('main-menu').style.display = 'none';
+    document.getElementById('creation-screen').style.display = 'block';
+    state = { walls: 100, warmth: 100, gold: 100, food: 80, day: 1, coal: 5, wood: 2 };
+    hero = { strength: 0, wisdom: 0, charisma: 0 };
+    document.getElementById('creation-gold').innerText = 5;
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-    const loaded = loadState();
-    Object.assign(state, loaded);
+function startGameFinal() {
+    document.getElementById('creation-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'grid';
+    updateUI();
+}
 
-    document.getElementById("start-btn").addEventListener("click", () => {
-        showScreen("creation-screen");
-        updateCreationScreen();
-    });
+function backToMenu() {
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('main-menu').style.display = 'block';
+}
 
-    document.querySelectorAll(".upgrade-btn").forEach((button) => {
-        button.addEventListener("click", () => {
-            upgradeStat(button.dataset.stat);
-        });
-    });
-
-    document.querySelectorAll(".play-upgrade-btn").forEach((button) => {
-        button.addEventListener("click", () => {
-            upgradeStat(button.dataset.stat);
-        });
-    });
-
-    document.querySelectorAll(".zone-button").forEach((button) => {
-        button.addEventListener("click", () => {
-            performDayAction(button.dataset.region);
-        });
-    });
-
-    document.querySelectorAll(".inventory-slot").forEach((button) => {
-        button.addEventListener("click", () => {
-            equipSlot(Number(button.dataset.slot));
-        });
-    });
-
-    document.getElementById("night-day-btn").addEventListener("click", () => {
-        startNight();
-    });
-
-    document.getElementById("enter-game-btn").addEventListener("click", () => {
-        startGame();
-    });
-
-    showScreen("main-menu");
-    updateCreationScreen();
-    updateGameScreen();
-    renderQuestChoices();
-    renderLeaderboard();
-    saveState();
-});
+window.onload = () => {
+    document.getElementById('to-creation-btn').onclick = toCreationScreen;
+    document.getElementById('start-game-final-btn').onclick = startGameFinal;
+    document.getElementById('about-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'flex';
+    document.getElementById('close-modal-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'none';
+};

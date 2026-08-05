@@ -3,122 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Castle Defense Survival</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
+    <title>Замковые Хроники: Великая Зима</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
-    <div id="main-menu" style="display: block;">
-        <div class="menu-card">
-            <p class="menu-tag">Оборона • Выживание • Королевство</p>
-            <h1>Castle Defense Survival</h1>
-            <div class="menu-actions">
-                <button id="start-btn" type="button">Начать правление 👑</button>
+
+    <!-- 👑 ЭКРАН 1: ГЛАВНОЕ МЕНЮ -->
+    <div id="main-menu" class="menu-card">
+        <span class="subtitle">Стратегия • Оборона • Выживание в мороз</span>
+        <h1>Замковые Хроники 🏰</h1>
+        <div class="menu-buttons">
+            <button id="to-creation-btn" class="btn-primary">Начать правление 👑</button>
+            <button id="about-btn" class="btn-secondary">Об игре Хроник 📜</button>
+        </div>
+    </div>
+
+    <!-- 🎭 ЭКРАН 2: РАСПРЕДЕЛЕНИЕ СТАТОВ -->
+    <div id="creation-screen" class="menu-card" style="display: none;">
+        <h2>Подготовка Королевства 🧭</h2>
+        <p>Распределите стартовые припасы на обучение вашего правителя:</p>
+        <div class="gold-pool">Доступно очков подготовки: <strong id="creation-gold">5</strong> 🪙</div>
+        
+        <div class="stat-upgrade-row">
+            <span>💪 Сила (Защита стен и битвы): <strong id="creation-strength">0</strong></span>
+            <button class="btn-sm" onclick="upgradeStat('strength')">+ Очко (1)</button>
+        </div>
+        <div class="stat-upgrade-row">
+            <span>🧠 Мудрость (Экономика и Обогрев): <strong id="creation-wisdom">0</strong></span>
+            <button class="btn-sm" onclick="upgradeStat('wisdom')">+ Очко (1)</button>
+        </div>
+        <div class="stat-upgrade-row">
+            <span>👑 Харизма (Лояльность и Воля): <strong id="creation-charisma">0</strong></span>
+            <button class="btn-sm" onclick="upgradeStat('charisma')">+ Очко (1)</button>
+        </div>
+
+        <button id="start-game-final-btn" class="btn-primary" style="margin-top: 25px;">Взойти на престол ⚔️</button>
+    </div>
+
+    <!-- ⚔️ ЭКРАН 3: ИГРОВОЙ ПРОЦЕСС -->
+    <div id="game-screen" class="rpg-layout" style="display: none;">
+        
+        <!-- Левая колонка: Профиль Правителя и Рюкзак закромов -->
+        <div class="panel">
+            <h3>Правитель Замка 🧙‍♂️</h3>
+            <div class="hero-profile">
+                <div class="hero-stats-list">
+                    <div>💪 Сила: <strong id="game-strength">0</strong></div>
+                    <div>🧠 Мудрость: <strong id="game-wisdom">0</strong></div>
+                    <div>👑 Харизма: <strong id="game-charisma">0</strong></div>
+                </div>
+            </div>
+            <h4>Склад (Инвентарь)</h4>
+            <div class="inventory-grid">
+                <div class="inv-slot" id="slot-1">🪵 Дрова замка</div>
+                <div class="inv-slot" id="slot-2">✏️ Уголь разведки</div>
+                <div class="inv-slot" id="slot-3">🔧 Пусто</div>
+            </div>
+        </div>
+
+        <!-- Центральная колонка: Карта Владений и Квесты -->
+        <div class="panel main-panel">
+            <h3>Карта Владений 🗺️</h3>
+            <div class="map-grid">
+                <button class="map-zone" id="zone-castle" onclick="exploreZone('castle')">🏰 Главная Цитадель<br><small id="status-castle">В безопасности</small></button>
+                <button class="map-zone" id="zone-forest" onclick="exploreZone('forest')">🌲 Окрестный Лес<br><small id="status-forest">Не разведано</small></button>
+                <button class="map-zone" id="zone-mines" onclick="exploreZone('mines')">⛏️ Дальние Шахты<br><small id="status-mines">Не разведано</small></button>
+            </div>
+            <div id="event-box">
+                <p id="event-text">Прикажите разведать заснеженные земли с помощью Уголька или начните сбор ресурсов в Цитадели...</p>
+                <div id="choices-container"></div>
+            </div>
+        </div>
+
+        <!-- Правая колонка: Статус Королевства -->
+        <div class="panel">
+            <h3>Статус Замка 🌾</h3>
+            <div class="stats-vertical">
+                <div class="stat-box" style="border-color: #ff4444;">🛡️ Стены (Состояние): <strong id="gold">100</strong>%</div>
+                <div class="stat-box">🔥 Тепло в Замке: <strong id="army">100</strong>%</div>
+                <div class="stat-box">🪙 Казна (Золото): <strong id="food">100</strong></div>
+                <div class="stat-box">🌾 Провиант (Еда): <strong id="day">80</strong></div>
+                <div class="stat-box">📅 Продержались: <strong id="game-day">1</strong> дн.</div>
+            </div>
+            <div id="leaderboard">
+                <h4>Зал Славы Хроник</h4>
+                <ol id="leaderboard-list">
+                    <li>Король Дариан — 14 дней</li>
+                </ol>
             </div>
         </div>
     </div>
 
-    <div id="creation-screen" style="display: none;">
-        <div class="creation-card">
-            <div class="panel-title">Создание правителя</div>
-            <div class="creation-panel">
-                <div class="creation-row">
-                    <span>💪 Сила</span>
-                    <strong id="creation-strength">0</strong>
-                    <button class="upgrade-btn" data-stat="strength" type="button">+ Прокачать (20 🪙)</button>
-                </div>
-                <div class="creation-row">
-                    <span>🧠 Мудрость</span>
-                    <strong id="creation-wisdom">0</strong>
-                    <button class="upgrade-btn" data-stat="wisdom" type="button">+ Прокачать (20 🪙)</button>
-                </div>
-                <div class="creation-row">
-                    <span>👑 Харизма</span>
-                    <strong id="creation-charisma">0</strong>
-                    <button class="upgrade-btn" data-stat="charisma" type="button">+ Прокачать (20 🪙)</button>
-                </div>
-            </div>
-
-            <div class="creation-footer">
-                <div class="creation-gold">🪙 <strong id="creation-gold">100</strong></div>
-                <button id="enter-game-btn" type="button">Взойти на престол</button>
-            </div>
+    <!-- 📜 МОДАЛЬНОЕ ОКНО "ОБ ИГРЕ" -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <button id="close-modal-btn" class="close-btn">&times;</button>
+            <h2>Замковые Хроники: Великая Зима 🏰❄️</h2>
+            <p>На ваше королевство обрушились вечные морозы и набеги дикарей. Ваша цель — удерживать Цитадель.</p>
+            <p>Отправляйте разведчиков с Углем в Лес и Шахты, чтобы находить дрова и припасы. Следите за Теплом в замке и Прочностью Стен. Навыки Мудрости помогут экономить топливо, а Сила уменьшит урон при защите ворот!</p>
         </div>
     </div>
-
-    <main id="game-screen" class="game-container" style="display: none;">
-        <div class="game-layout">
-            <section class="panel-card left-column">
-                <div class="panel-title">Профиль правителя</div>
-                <div class="hero-header">
-                    <div id="hero-avatar" class="hero-avatar">🧙</div>
-                    <div class="hero-name">Ариэль</div>
-                </div>
-
-                <div class="stats-grid">
-                    <div class="stat-row">
-                        <span>💪 Сила</span>
-                        <strong id="hero-strength">0</strong>
-                        <button class="play-upgrade-btn" data-stat="strength" type="button">+</button>
-                    </div>
-                    <div class="stat-row">
-                        <span>🧠 Мудрость</span>
-                        <strong id="hero-wisdom">0</strong>
-                        <button class="play-upgrade-btn" data-stat="wisdom" type="button">+</button>
-                    </div>
-                    <div class="stat-row">
-                        <span>👑 Харизма</span>
-                        <strong id="hero-charisma">0</strong>
-                        <button class="play-upgrade-btn" data-stat="charisma" type="button">+</button>
-                    </div>
-                </div>
-
-                <div class="panel-title inventory-title">Инвентарь</div>
-                <div class="inventory-grid">
-                    <button class="inventory-slot" data-slot="0" type="button"><span>Слот 1</span><strong id="slot-0">—</strong></button>
-                    <button class="inventory-slot" data-slot="1" type="button"><span>Слот 2</span><strong id="slot-1">—</strong></button>
-                    <button class="inventory-slot" data-slot="2" type="button"><span>Слот 3</span><strong id="slot-2">—</strong></button>
-                </div>
-            </section>
-
-            <section class="panel-card center-column">
-                <div class="panel-title">Карта тактики</div>
-                <div class="region-grid">
-                    <button class="zone-button" data-region="castle" type="button"><span>🏰</span><strong>Укрепить стены</strong></button>
-                    <button class="zone-button" data-region="forest" type="button"><span>🌲</span><strong>Сбор припасов</strong></button>
-                    <button class="zone-button" data-region="mines" type="button"><span>⛏️</span><strong>Добыча руды</strong></button>
-                </div>
-
-                <div class="quest-card">
-                    <p id="quest-text" class="quest-text">Вы вступаете в путь.</p>
-                    <div id="choices-container" class="choices-container"></div>
-                    <button id="night-day-btn" class="night-day-btn" type="button">Завершить день и встретить ночь 🌙</button>
-                </div>
-            </section>
-
-            <aside class="panel-card right-column">
-                <div class="panel-title">Ресурсы королевства</div>
-                <div class="resource-list">
-                    <div class="resource-pill"><span>🪙</span><strong id="gold">100</strong></div>
-                    <div class="resource-pill"><span>⚔️</span><strong id="army">50</strong></div>
-                    <div class="resource-pill"><span>🌾</span><strong id="food">80</strong></div>
-                    <div class="resource-pill"><span>🧱</span><strong id="wall">100%</strong></div>
-                    <div class="resource-pill"><span>⏳</span><strong id="phase">День</strong></div>
-                    <div class="resource-pill"><span>⚡</span><strong id="energy">2</strong></div>
-                    <div class="resource-pill"><span>🌙</span><strong id="night">Ночь 1</strong></div>
-                </div>
-
-                <div class="leaderboard">
-                    <h3>Зал Славы</h3>
-                    <ol id="leaderboard-list">
-                        <li>Ариэль — первый шаг</li>
-                    </ol>
-                </div>
-            </aside>
-        </div>
-    </main>
 
     <script src="app.js"></script>
 </body>
