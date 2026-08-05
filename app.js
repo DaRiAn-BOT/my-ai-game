@@ -258,7 +258,16 @@ function toCreationScreen() {
     state = { walls: 100, mana: 50, warmth: 100, gold: 100, food: 80, day: 1, coal: 3, wood: 2, potion: 1, raidTimer: 5 };
     hero = { strength: 0, wisdom: 0, charisma: 0, class: "knight" }; selectClass('knight');
 }
-window.onload = () => {
+window.onload = () => {function startGameFinal() {
+    if (hero.class === 'knight') { hero.strength += 3; artifact = "Стальной Меч"; }
+    if (hero.class === 'mage') { hero.wisdom += 3; state.mana = 100; }
+    if (hero.class === 'merchant') { state.gold += 150; }
+    document.getElementById('hero-title').innerText = hero.class === 'knight' ? "Рыцарь Цитадели 🛡️" : hero.class === 'mage' ? "Архимаг Цитадели 🧙‍♂️" : "Купец Цитадели 🪙";
+    document.getElementById('creation-screen').style.display = 'none'; 
+    document.getElementById('game-screen').style.display = 'grid'; 
+    updateUI();
+}
+
     document.getElementById('to-creation-btn').onclick = toCreationScreen;
     document.getElementById('start-game-final-btn').onclick = startGameFinal;
     document.getElementById('resume-game-btn').onclick = loadSavedGame;
