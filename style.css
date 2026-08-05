@@ -10,23 +10,23 @@ body {
     justify-content: center;
     align-items: center;
     background:
-        radial-gradient(circle at top, rgba(120, 73, 22, 0.34), transparent 40%),
-        linear-gradient(180deg, #090909, #111111 48%, #080808);
-    color: #f8f2df;
+        radial-gradient(circle at top, rgba(104, 92, 82, 0.35), transparent 42%),
+        linear-gradient(180deg, #0a0a0a, #111111 54%, #090909);
+    color: #f7f3e9;
     font-family: "Cinzel", "Segoe UI", serif;
 }
 
 button {
-    border: 1px solid rgba(245, 211, 126, 0.3);
+    border: 1px solid rgba(255, 206, 126, 0.35);
     border-radius: 12px;
     cursor: pointer;
-    color: #fff7df;
-    background: linear-gradient(180deg, #8a5a21, #4a2f0f);
+    color: #fff8e8;
+    background: linear-gradient(180deg, #6a4014, #2f1a06);
     font-family: "Cinzel", serif;
 }
 
 button:hover:not(:disabled) {
-    background: linear-gradient(180deg, #9c6020, #5a350f);
+    background: linear-gradient(180deg, #7a4514, #3a2208);
 }
 
 .menu-card,
@@ -38,28 +38,28 @@ button:hover:not(:disabled) {
 .menu-card,
 .creation-card,
 .panel-card {
-    background: linear-gradient(180deg, rgba(39, 26, 10, 0.98), rgba(18, 12, 5, 0.98));
-    border: 1px solid rgba(245, 203, 110, 0.3);
+    background: linear-gradient(180deg, rgba(27, 24, 22, 0.98), rgba(16, 12, 12, 0.98));
+    border: 1px solid rgba(224, 171, 79, 0.32);
     border-radius: 18px;
-    box-shadow: inset 0 0 0 1px rgba(255, 225, 160, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(255, 229, 172, 0.06);
 }
 
 .menu-card {
     text-align: center;
-    padding: 32px 24px;
+    padding: 34px 24px;
 }
 
 .menu-tag {
     margin: 0 0 12px;
-    color: #f0c97b;
+    color: #f4cb77;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.16em;
     font-size: 0.72rem;
 }
 
 .menu-card h1 {
     margin: 0 0 24px;
-    color: #fff3d2;
+    color: #fff3cf;
     font-family: "Cinzel", serif;
 }
 
@@ -93,17 +93,17 @@ button:hover:not(:disabled) {
 .creation-row {
     padding: 12px 14px;
     border-radius: 12px;
-    background: rgba(245, 220, 150, 0.05);
-    border: 1px solid rgba(245, 203, 110, 0.24);
+    background: rgba(245, 215, 134, 0.06);
+    border: 1px solid rgba(238, 183, 85, 0.25);
 }
 
 .creation-row span,
 .creation-gold {
-    color: #eed190;
+    color: #ecc96e;
 }
 
 .creation-row strong {
-    color: #fff6df;
+    color: #fff2cf;
 }
 
 .upgrade-btn,
@@ -112,7 +112,7 @@ button:hover:not(:disabled) {
 }
 
 .play-upgrade-btn {
-    min-width: 36px;
+    min-width: 38px;
     padding-inline: 10px;
 }
 
@@ -165,7 +165,7 @@ button:hover:not(:disabled) {
 }
 
 .hero-name {
-    color: #fff3d2;
+    color: #fff2cc;
     font-size: 1rem;
 }
 
@@ -236,8 +236,7 @@ button:hover:not(:disabled) {
     gap: 10px;
 }
 
-.zone-button,
-.region-pill {
+.zone-button {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -247,13 +246,11 @@ button:hover:not(:disabled) {
     border: 1px solid rgba(245, 203, 110, 0.24);
 }
 
-.zone-button span,
-.region-pill span {
+.zone-button span {
     font-size: 1.1rem;
 }
 
-.zone-button strong,
-.region-pill strong {
+.zone-button strong {
     color: #f8e6b8;
     font-size: 0.82rem;
 }
@@ -262,6 +259,11 @@ button:hover:not(:disabled) {
     border-color: #ffd978;
     box-shadow: 0 0 0 2px rgba(255, 218, 120, 0.28);
     background: linear-gradient(180deg, rgba(228, 191, 88, 0.26), rgba(95, 53, 10, 0.24));
+}
+
+.zone-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
 }
 
 .quest-card {
@@ -304,6 +306,15 @@ button:hover:not(:disabled) {
 .choices-container button:disabled {
     opacity: 0.45;
     cursor: not-allowed;
+}
+
+.night-day-btn {
+    margin-top: 12px;
+    width: 100%;
+    display: none;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, #4e4c4a, #1e1a16);
+    border-color: rgba(255, 215, 139, 0.25);
 }
 
 .resource-list {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Замковые Хроники</title>
+    <title>Castle Defense Survival</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
@@ -12,8 +12,8 @@
 <body>
     <div id="main-menu" style="display: block;">
         <div class="menu-card">
-            <p class="menu-tag">Стратегия • Фэнтези • Королевство</p>
-            <h1>Замковые Хроники</h1>
+            <p class="menu-tag">Оборона • Выживание • Королевство</p>
+            <h1>Castle Defense Survival</h1>
             <div class="menu-actions">
                 <button id="start-btn" type="button">Начать правление 👑</button>
             </div>
@@ -84,16 +84,17 @@
             </section>
 
             <section class="panel-card center-column">
-                <div class="panel-title">Карта регионов</div>
+                <div class="panel-title">Карта тактики</div>
                 <div class="region-grid">
-                    <button class="zone-button" data-region="castle" type="button"><span>🏰</span><strong>Замок</strong></button>
-                    <button class="zone-button" data-region="forest" type="button"><span>🌲</span><strong>Лес</strong></button>
-                    <button class="zone-button" data-region="mines" type="button"><span>⛏️</span><strong>Шахты</strong></button>
+                    <button class="zone-button" data-region="castle" type="button"><span>🏰</span><strong>Укрепить стены</strong></button>
+                    <button class="zone-button" data-region="forest" type="button"><span>🌲</span><strong>Сбор припасов</strong></button>
+                    <button class="zone-button" data-region="mines" type="button"><span>⛏️</span><strong>Добыча руды</strong></button>
                 </div>
 
                 <div class="quest-card">
                     <p id="quest-text" class="quest-text">Вы вступаете в путь.</p>
                     <div id="choices-container" class="choices-container"></div>
+                    <button id="night-day-btn" class="night-day-btn" type="button">Завершить день и встретить ночь 🌙</button>
                 </div>
             </section>
 
@@ -103,7 +104,10 @@
                     <div class="resource-pill"><span>🪙</span><strong id="gold">100</strong></div>
                     <div class="resource-pill"><span>⚔️</span><strong id="army">50</strong></div>
                     <div class="resource-pill"><span>🌾</span><strong id="food">80</strong></div>
-                    <div class="resource-pill"><span>📅</span><strong id="day">1</strong></div>
+                    <div class="resource-pill"><span>🧱</span><strong id="wall">100%</strong></div>
+                    <div class="resource-pill"><span>⏳</span><strong id="phase">День</strong></div>
+                    <div class="resource-pill"><span>⚡</span><strong id="energy">2</strong></div>
+                    <div class="resource-pill"><span>🌙</span><strong id="night">Ночь 1</strong></div>
                 </div>
 
                 <div class="leaderboard">
