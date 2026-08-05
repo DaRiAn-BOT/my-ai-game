@@ -10,48 +10,85 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main id="game-container" class="game-container">
+    <div id="main-menu" style="display: block;">
+        <div class="menu-card">
+            <p class="menu-tag">Стратегия • Фэнтези • Королевство</p>
+            <h1>Замковые Хроники</h1>
+            <div class="menu-actions">
+                <button id="start-btn" type="button">Начать правление 👑</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="creation-screen" style="display: none;">
+        <div class="creation-card">
+            <div class="panel-title">Создание правителя</div>
+            <div class="creation-panel">
+                <div class="creation-row">
+                    <span>💪 Сила</span>
+                    <strong id="creation-strength">0</strong>
+                    <button class="upgrade-btn" data-stat="strength" type="button">+ Прокачать (20 🪙)</button>
+                </div>
+                <div class="creation-row">
+                    <span>🧠 Мудрость</span>
+                    <strong id="creation-wisdom">0</strong>
+                    <button class="upgrade-btn" data-stat="wisdom" type="button">+ Прокачать (20 🪙)</button>
+                </div>
+                <div class="creation-row">
+                    <span>👑 Харизма</span>
+                    <strong id="creation-charisma">0</strong>
+                    <button class="upgrade-btn" data-stat="charisma" type="button">+ Прокачать (20 🪙)</button>
+                </div>
+            </div>
+
+            <div class="creation-footer">
+                <div class="creation-gold">🪙 <strong id="creation-gold">100</strong></div>
+                <button id="enter-game-btn" type="button">Взойти на престол</button>
+            </div>
+        </div>
+    </div>
+
+    <main id="game-screen" class="game-container" style="display: none;">
         <div class="game-layout">
             <section class="panel-card left-column">
-                <div class="panel-title">Профиль героя</div>
-
+                <div class="panel-title">Профиль правителя</div>
                 <div class="hero-header">
                     <div id="hero-avatar" class="hero-avatar">🧙</div>
-                    <label class="hero-name-field">
-                        <span>Имя</span>
-                        <input id="hero-name" type="text" value="Ариэль" maxlength="18">
-                    </label>
+                    <div class="hero-name">Ариэль</div>
                 </div>
 
                 <div class="stats-grid">
-                    <label class="stat-row">
+                    <div class="stat-row">
                         <span>💪 Сила</span>
-                        <input id="hero-strength" type="number" min="1" max="20" value="12">
-                    </label>
-                    <label class="stat-row">
+                        <strong id="hero-strength">0</strong>
+                        <button class="play-upgrade-btn" data-stat="strength" type="button">+</button>
+                    </div>
+                    <div class="stat-row">
                         <span>🧠 Мудрость</span>
-                        <input id="hero-wisdom" type="number" min="1" max="20" value="14">
-                    </label>
-                    <label class="stat-row">
+                        <strong id="hero-wisdom">0</strong>
+                        <button class="play-upgrade-btn" data-stat="wisdom" type="button">+</button>
+                    </div>
+                    <div class="stat-row">
                         <span>👑 Харизма</span>
-                        <input id="hero-charisma" type="number" min="1" max="20" value="10">
-                    </label>
+                        <strong id="hero-charisma">0</strong>
+                        <button class="play-upgrade-btn" data-stat="charisma" type="button">+</button>
+                    </div>
                 </div>
 
                 <div class="panel-title inventory-title">Инвентарь</div>
                 <div class="inventory-grid">
-                    <div class="inventory-slot"><span>Слот 1</span><strong id="slot-0">Меч</strong></div>
-                    <div class="inventory-slot"><span>Слот 2</span><strong id="slot-1">Зелье</strong></div>
-                    <div class="inventory-slot"><span>Слот 3</span><strong id="slot-2">Печать</strong></div>
+                    <button class="inventory-slot" data-slot="0" type="button"><span>Слот 1</span><strong id="slot-0">—</strong></button>
+                    <button class="inventory-slot" data-slot="1" type="button"><span>Слот 2</span><strong id="slot-1">—</strong></button>
+                    <button class="inventory-slot" data-slot="2" type="button"><span>Слот 3</span><strong id="slot-2">—</strong></button>
                 </div>
             </section>
 
             <section class="panel-card center-column">
                 <div class="panel-title">Карта регионов</div>
                 <div class="region-grid">
-                    <div class="region-pill"><span>🏰</span><strong>Замок</strong></div>
-                    <div class="region-pill"><span>🌲</span><strong>Лес</strong></div>
-                    <div class="region-pill"><span>⛏️</span><strong>Шахты</strong></div>
+                    <button class="zone-button" data-region="castle" type="button"><span>🏰</span><strong>Замок</strong></button>
+                    <button class="zone-button" data-region="forest" type="button"><span>🌲</span><strong>Лес</strong></button>
+                    <button class="zone-button" data-region="mines" type="button"><span>⛏️</span><strong>Шахты</strong></button>
                 </div>
 
                 <div class="quest-card">
@@ -73,7 +110,6 @@
                     <h3>Зал Славы</h3>
                     <ol id="leaderboard-list">
                         <li>Ариэль — первый шаг</li>
-                        <li>Волшебный Путь</li>
                     </ol>
                 </div>
             </aside>
