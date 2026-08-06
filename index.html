@@ -3,128 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Замковые Хроники: Ультимативное RPG Выживание</title>
+    <title>Замковые Хроники RPG</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://jsdelivr.net"></script>
 </head>
 <body>
-
-    <!-- 👑 ЭКРАН 1: ГЛАВНОЕ МЕНЮ -->
+    <!-- ЭКРАН 1: МЕНЮ -->
     <div id="main-menu" class="menu-card">
-        <span class="subtitle">Ультимативная Стратегия • Castle Defense</span>
+        <span class="subtitle">Магия • Выживание • Тактика</span>
         <h1>Замковые Хроники 🏰</h1>
         <div class="menu-buttons">
             <button id="to-creation-btn" class="btn-primary">Начать правление 👑</button>
-            <button id="resume-game-btn" class="btn-primary" style="display: none; background: #4caf50; color: white;">Продолжить ⏳</button>
+            <button id="resume-game-btn" class="btn-primary" style="display:none;background:#4caf50;">Продолжить ⏳</button>
             <button id="about-btn" class="btn-secondary">Об игре 📜</button>
         </div>
     </div>
-
-    <!-- 🎭 ЭКРАН 2: ВЫБОР КЛАССА И ПРОКАЧКА -->
-    <div id="creation-screen" class="menu-card" style="display: none; position: relative;">
-        <button class="close-btn" onclick="backToMenu()">&times;</button>
+    <!-- ЭКРАН 2: ПРОКАЧКА -->
+    <div id="creation-screen" class="menu-card" style="display:none;">
         <h2>Выберите Класс Правителя 👑</h2>
-        <div class="class-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
-            <button onclick="selectClass('knight')" id="class-knight" style="background: #3a2222; border: 1px solid #ff4444;">🛡️ Рыцарь<br><small>+3 Сила, Меч</small></button>
-            <button onclick="selectClass('mage')" id="class-mage" style="background: #222a3a; border: 1px solid #3498db;">🧙‍♂️ Маг<br><small>+3 Мудр, 100% Магия</small></button>
-            <button onclick="selectClass('merchant')" id="class-merchant" style="background: #3a3522; border: 1px solid #ffd700;">🪙 Купец<br><small>+150 Золота на старте</small></button>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+            <button onclick="selectClass('knight')" id="class-knight" style="background:#3a2222;border:1px solid #ff4444;">Рыцарь</button>
+            <button onclick="selectClass('mage')" id="class-mage" style="background:#222a3a;border:1px solid #3498db;">Маг</button>
+            <button onclick="selectClass('merchant')" id="class-merchant" style="background:#3a3522;border:1px solid #ffd700;">Купец</button>
         </div>
-        
-        <p>Распределите оставшиеся очки подготовки (Всего 5):</p>
+        <p>Распределите очки подготовки (Всего 5):</p>
         <div class="gold-pool">Доступно очков: <strong id="creation-gold">5</strong></div>
-        
         <div class="stat-upgrade-row"><span>💪 Сила: <strong id="creation-strength">0</strong></span><button class="btn-sm" onclick="upgradeStat('strength')">+</button></div>
         <div class="stat-upgrade-row"><span>🧠 Мудрость: <strong id="creation-wisdom">0</strong></span><button class="btn-sm" onclick="upgradeStat('wisdom')">+</button></div>
         <div class="stat-upgrade-row"><span>👑 Харизма: <strong id="creation-charisma">0</strong></span><button class="btn-sm" onclick="upgradeStat('charisma')">+</button></div>
-
-        <button id="start-game-final-btn" class="btn-primary" style="margin-top: 20px;">Взойти на престол ⚔️</button>
+        <button id="start-game-final-btn" class="btn-primary" style="margin-top:20px;">Взойти на престол ⚔️</button>
     </div>
-
-    <!-- ⚔️ ЭКРАН 3: ИГРОВОЙ ПРОЦЕСС -->
-    <div id="game-screen" class="rpg-layout" style="display: none; position: relative;">
-        <button class="close-btn" onclick="saveAndExit()" style="position: absolute; top: -10px; left: 10px; font-size: 32px; background: none; color: #ff4444; border: none; font-weight: bold; z-index: 10;">&times;</button>
-        
-        <!-- Левая колонка: Профиль и Инвентарь Лута -->
-        <div class="panel" style="margin-top: 25px;">
+    <!-- ЭКРАН 3: ИГРА -->
+    <div id="game-screen" class="rpg-layout" style="display:none;position:relative;">
+        <button class="close-btn" onclick="saveAndExit()" style="position:absolute;top:-10px;left:10px;font-size:32px;background:none;color:#ff4444;border:none;font-weight:bold;">&times;</button>
+        <div class="panel" style="margin-top:25px;">
             <h3 id="hero-title">Рыцарь Замка 🧙‍♂️</h3>
-            <div class="hero-profile">
-                <div class="hero-stats-list">
-                    <div>💪 Сила: <strong id="game-strength">0</strong></div>
-                    <div>🧠 Мудрость: <strong id="game-wisdom">0</strong></div>
-                    <div>👑 Харизма: <strong id="game-charisma">0</strong></div>
-                </div>
-            </div>
-            <h4>Рюкзак (Предметы)</h4>
-            <div class="inventory-grid-vertical" style="gap: 5px; display: flex; flex-direction: column;">
+            <div class="hero-profile"><div class="hero-stats-list">
+                <div>💪 Сила: <strong id="game-strength">0</strong></div>
+                <div>🧠 Мудрость: <strong id="game-wisdom">0</strong></div>
+                <div>👑 Харизма: <strong id="game-charisma">0</strong></div>
+            </div></div>
+            <h4>Склад (Инвентарь)</h4>
+            <div class="inventory-grid-vertical">
                 <div class="inv-slot-resource" id="slot-1">🪵 Дрова: 2</div>
                 <div class="inv-slot-resource" id="slot-2">✏️ Уголь: 3</div>
-                <div class="inv-slot-item" id="slot-artifact" style="color: #ffd700; border: 1px solid #ffd700;">⚔️ Оружие: Нет</div>
-                <button onclick="usePotion()" id="slot-potion" class="btn-sm" style="background: #9c27b0; color: white; width: 100%; text-align: center; display: block; margin: 0; padding: 8px 0;">🧪 Эликсир Тепла (0)</button>
+                <div class="inv-slot-item" id="slot-artifact" style="color:#ffd700;border:1px solid #ffd700;">🎒 Экипировка: Нет</div>
+                <button onclick="usePotion()" id="slot-potion" class="btn-sm" style="background:#9c27b0;width:100%;margin-top:5px;">🧪 Эликсир Тепла (0)</button>
             </div>
-            <h4 style="margin-top: 15px;">Постройки Цитадели</h4>
-            <div class="inventory-grid-vertical" style="gap: 5px; display: flex; flex-direction: column;">
-                <button onclick="buildStructure('tower')" id="build-tower" class="btn-sm" style="background: #333; text-align: left; margin: 0;">🗼 Маг. Башня (50🪙)</button>
-                <button onclick="buildStructure('greenhouse')" id="build-greenhouse" class="btn-sm" style="background: #333; text-align: left; margin: 0;">🌿 Теплица (50🪙)</button>
+            <h4 style="margin-top:15px;">Постройки Цитадели</h4>
+            <div class="inventory-grid-vertical">
+                <button onclick="buildStructure('tower')" id="build-tower" class="btn-sm" style="background:#333;text-align:left;width:100%;">🗼 Маг. Башня (50🪙)</button>
+                <button onclick="buildStructure('greenhouse')" id="build-greenhouse" class="btn-sm" style="background:#333;text-align:left;width:100%;margin-top:5px;">🌿 Теплица (50🪙)</button>
             </div>
         </div>
-
-        <!-- Центральная колонка: Карта и Квесты -->
-        <div class="panel main-panel" style="margin-top: 25px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="panel main-panel" style="margin-top:25px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
                 <h3>Карта Владений 🗺️</h3>
-                <div id="weather-banner" style="background: #252525; padding: 5px 15px; border-radius: 6px; border: 1px solid #ffd700; font-weight: bold;">Погода: Ясно ☀️</div>
+                <div id="weather-banner" style="background:#252525;padding:5px 15px;border-radius:6px;border:1px solid #ffd700;font-weight:bold;">Погода: Ясно ☀️</div>
             </div>
             <div class="map-grid">
                 <button class="map-zone" id="zone-castle" onclick="exploreZone('castle')">🏰 Цитадель<br><small id="status-castle">В безопасности</small></button>
                 <button class="map-zone" id="zone-forest" onclick="exploreZone('forest')">🌲 Лес<br><small id="status-forest">Не разведано</small></button>
                 <button class="map-zone" id="zone-mines" onclick="exploreZone('mines')">⛏️ Шахты<br><small id="status-mines">Не разведано</small></button>
-                <button class="map-zone" id="zone-market" onclick="openMarket()" style="border-color: #ffd700; background: #2b2512;">⚖️ Рынок<br><small>Торговля</small></button>
+                <button class="map-zone" id="zone-market" onclick="openMarket()" style="border-color:#ffd700;background:#2b2512;">⚖️ Рынок<br><small>Торговля</small></button>
             </div>
             <div id="event-box">
-                <p id="event-text">Прикажите разведать заснеженные земли с помощью Уголька или начните сбор ресурсов в Цитадели...</p>
+                <p id="event-text">Прикажите разведать заснеженные земли...</p>
                 <div id="choices-container"></div>
             </div>
-            <!-- Блок Книги Заклинаний -->
-            <div id="spellbook-panel" style="background: #151a25; padding: 15px; border-radius: 10px; border: 1px solid #3498db; margin-top: auto;">
-                <h4 style="margin: 0 0 10px 0; color: #3498db;">📜 Книга Древних Заклинаний (Клик для каста)</h4>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-                    <button onclick="castSpell('shield')" class="btn-sm" style="background: #2196f3; color: white;">🛡️ Ледяной Щит (20🔮)</button>
-                    <button onclick="castSpell('fire')" class="btn-sm" style="background: #ff5722; color: white;">🔥 Огненный Дождь (30🔮)</button>
+            <div id="spellbook-panel" style="background:#151a25;padding:15px;border-radius:10px;border:1px solid #3498db;margin-top:auto;">
+                <h4 style="margin:0 0 10px 0;color:#3498db;">📜 Книга Древних Заклинаний</h4>
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+                    <button onclick="castSpell('shield')" class="btn-sm" style="background:#2196f3;">🛡️ Ледяной Щит (20🔮)</button>
+                    <button onclick="castSpell('fire')" class="btn-sm" style="background:#ff5722;">🔥 Огненный Дождь (30🔮)</button>
                 </div>
             </div>
         </div>
-
-        <!-- Правая колонка: Статус Королевства -->
-        <div class="panel" style="margin-top: 25px;">
+        <div class="panel" style="margin-top:25px;">
             <h3>Статус Замка 🌾</h3>
             <div class="stats-vertical">
-                <div class="stat-box" style="border-color: #ff4444;">🛡️ Стены (Состояние): <strong id="gold">100</strong>%</div>
-                <div class="stat-box" style="border-color: #3498db;">🔮 Магия Цитадели: <strong id="mana">50</strong>%</div>
+                <div class="stat-box" style="border-color:#ff4444;">🛡️ Стены (Состояние): <strong id="gold">100</strong>%</div>
+                <div class="stat-box" style="border-color:#3498db;">🔮 Магия Цитадели: <strong id="mana">50</strong>%</div>
                 <div class="stat-box">🔥 Тепло в Замке: <strong id="army">100</strong>%</div>
                 <div class="stat-box">🪙 Казна (Золото): <strong id="food">100</strong></div>
                 <div class="stat-box">🌾 Провиант (Еда): <strong id="day">80</strong></div>
-                <div class="stat-box" style="border-color: #e91e63;">🚨 До Набега Осады: <strong id="raid-timer">5</strong> ходов</div>
+                <div class="stat-box" style="border-color:#e91e63;">🚨 До Набега Осады: <strong id="raid-timer">5</strong> ходов</div>
                 <div class="stat-box">📅 Продержались: <strong id="game-day">1</strong> дн.</div>
             </div>
             <div id="leaderboard">
                 <h4>Зал Славы Хроник</h4>
-                <ol id="leaderboard-list">
-                    <li>Король Дариан — 14 дней</li>
-                </ol>
+                <ol id="leaderboard-list"><li>Король Дариан — 14 дней</li></ol>
             </div>
         </div>
     </div>
-
-    <!-- 📜 МОДАЛЬНОЕ ОКНО -->
-    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+    <div id="modal-overlay" class="modal-overlay" style="display:none;">
         <div class="modal-card">
             <button id="close-modal-btn" class="close-btn">&times;</button>
             <h2>Замковые Хроники: Великая Зима 🏰❄️</h2>
-            <p>Новое ультимативное выживание! Выбирайте класс, прокачивайте героя, стройте Магические Башни и Теплицы.</p>
-            <p>Следите за Погодой и Набегами Дикарей, которые штурмуют стены каждые 5 ходов. Сражайтесь с Монстрами в лесу и используйте свитки Книги Заклинаний!</p>
+            <p>Ультимативное выживание! Выбирайте класс, прокачивайте героя, стройте здания и защищайте стены от набегов дикарей.</p>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
