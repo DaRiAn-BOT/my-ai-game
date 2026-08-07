@@ -171,6 +171,16 @@ async function handleAuth(type) {
 
 window.onload = () => {
     document.getElementById('to-creation-btn').onclick = toCreationScreen;
+    function backToMenu() { 
+    document.getElementById('game-screen').style.display = 'none'; 
+    document.getElementById('creation-screen').style.display = 'none'; 
+    document.getElementById('main-menu').style.display = 'block'; 
+    
+    // Очищаем текстовые поля ввода, чтобы они не оставались забитыми после конца игры
+    document.getElementById('auth-nickname').value = '';
+    document.getElementById('auth-email').value = '';
+    document.getElementById('auth-password').value = '';
+}
     document.getElementById('start-game-final-btn').onclick = startGameFinal;
     document.getElementById('about-btn').onclick = () => { document.getElementById('modal-overlay').style.display = 'flex'; };
     document.getElementById('close-modal-btn').onclick = () => { document.getElementById('modal-overlay').style.display = 'none'; };

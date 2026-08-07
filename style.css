@@ -68,3 +68,79 @@ button { border-radius: 8px; cursor: pointer; font-weight: 700; border: none; tr
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 100; }
 .modal-card { background: #1e1e1e; padding: 30px; border-radius: 16px; max-width: 400px; text-align: center; position: relative; border: 1px solid #333; }
 .close-btn { position: absolute; top: 10px; right: 10px; background: none; color: #ff4444; font-size: 24px; cursor: pointer; }
+/* 🗺️ Изометрическое 3D-пространство карты */
+#grid-map-container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    max-width: 450px;
+    margin: 20px auto;
+    transform: perspective(600px) rotateX(45deg) rotateZ(-30deg);
+    transform-style: preserve-3d;
+    transition: transform 0.5s ease;
+}
+
+/* Обновленный дизайн 3D-плиток */
+.cell {
+    width: 75px;
+    height: 75px;
+    background: linear-gradient(135deg, #1f2335 0%, #161925 100%);
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.8em;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5), 0 2px 0 #0f111a;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0);
+}
+
+.cell:hover {
+    transform: translateZ(10px);
+    border-color: #ffd700;
+    box-shadow: 0 15px 25px rgba(0,0,0,0.6), 0 0 15px rgba(255, 215, 0, 0.2);
+}
+
+.cell.fog {
+    background: #090a10;
+    border-color: #12131f;
+    box-shadow: none;
+    color: transparent !important;
+}
+
+/* Эффект свечения игрока на плитке */
+.cell.player {
+    background: linear-gradient(135deg, #ffd700 0%, #ff9500 100%);
+    border-color: #fff;
+    box-shadow: 0 0 25px #ffd700, 0 10px 20px rgba(0,0,0,0.5);
+    transform: translateZ(15px);
+    animation: floatingHero 2s infinite ease-in-out;
+}
+
+@keyframes floatingHero {
+    0% { transform: translateZ(15px); }
+    50% { transform: translateZ(22px); }
+    100% { transform: translateZ(15px); }
+}
+
+/* 🧙‍♂️ Карточка Живого Персонажа в левой панели */
+.hero-avatar-box {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #12131a;
+    border: 3px solid #ffd700;
+    margin: 0 auto 15px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    box-shadow: 0 0 20px rgba(255,215,0,0.2);
+    animation: avatarPulse 3s infinite alternate;
+}
+
+@keyframes avatarPulse {
+    0% { box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+    100% { box-shadow: 0 0 25px rgba(255,215,0,0.5); border-color: #ff9500; }
+}
