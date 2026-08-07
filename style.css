@@ -1,106 +1,83 @@
 body {
-    background-color: #121212;
-    color: #e0e0e0;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    background: radial-gradient(circle at center, #1a1c29 0%, #0d0e15 100%);
+    color: #f0f2f5;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    margin: 0; padding: 20px;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh; box-sizing: border-box;
+}
+
+/* Стеклянные неоновые карточки */
+.menu-card, .panel {
+    background: rgba(30, 32, 50, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 215, 0, 0.15);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255,255,255,0.05);
     box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
-/* Экраны Главного меню и Прокачки */
-.menu-card {
-    max-width: 500px;
-    width: 100%;
-    background: #1e1e1e;
-    padding: 35px;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-    border: 1px solid #2d2d2d;
-    text-align: center;
-}
+.menu-card { max-width: 550px; width: 100%; text-align: center; }
+.menu-card h1 { font-size: 2.8em; color: #ffd700; margin: 10px 0 25px 0; text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); font-weight: 800; letter-spacing: -1px; }
+.subtitle { color: #8a99ad; text-transform: uppercase; font-size: 0.8em; letter-spacing: 3px; font-weight: 700; }
 
-.menu-card h1 { font-size: 2.4em; color: #ffd700; margin: 15px 0 30px 0; }
-.subtitle { color: #888; text-transform: uppercase; font-size: 0.85em; letter-spacing: 2px; }
-.gold-pool { background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 1.2em; border: 1px solid #ffd700; }
-.stat-upgrade-row { display: flex; justify-content: space-between; align-items: center; background: #252525; padding: 10px 20px; margin: 6px 0; border-radius: 8px; border: 1px solid #333; }
-
-/* 👑 Главная Трёхколоночная Сетка RPG */
+/* Трёхколоночная Grid-сетка */
 .rpg-layout {
     display: grid;
-    grid-template-columns: 280px 1fr 280px;
-    gap: 20px;
-    max-width: 1250px;
+    grid-template-columns: 290px 1fr 290px;
+    gap: 25px;
+    max-width: 1350px;
     width: 100%;
 }
 
-.panel {
-    background: #1e1e1e;
-    padding: 20px;
-    border-radius: 14px;
-    border: 1px solid #2d2d2d;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+.main-panel { display: flex; flex-direction: column; gap: 20px; }
+
+/* Красивые Поля ввода */
+input {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 8px 0;
+    background: rgba(10, 11, 18, 0.6);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 0.95em;
     box-sizing: border-box;
+    transition: all 0.2s ease;
 }
+input:focus { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); outline: none; }
 
-.main-panel { display: flex; flex-direction: column; gap: 15px; }
-/* Интерактивная Карта Владений */
-.map-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.map-zone { background: #2a2a2a; padding: 15px 2px; border-radius: 8px; text-align: center; border: 1px solid #444; font-weight: bold; color: white; font-size: 0.85em; cursor: pointer; }
-.map-zone small { display: block; margin-top: 4px; font-size: 0.85em; color: #aaa; }
-
-/* Кнопки действий и Квесты */
-#event-box { background: #252525; padding: 20px; border-radius: 10px; border: 1px solid #333; min-height: 140px; text-align: left; }
-#event-text { font-size: 1.1em; line-height: 1.5; margin-top: 0; }
-
-button { border-radius: 6px; cursor: pointer; font-weight: 600; border: none; transition: all 0.2s ease; }
-.btn-primary { background: #ffd700; color: #121212; padding: 14px; width: 100%; font-size: 1.05em; margin: 5px 0; }
-.btn-primary:hover { background: #ffe240; transform: translateY(-2px); }
-.btn-secondary { background: #333; color: #fff; padding: 14px; width: 100%; border: 1px solid #444; margin: 5px 0; }
-.btn-secondary:hover { background: #444; }
-.btn-sm { background: #4caf50; color: white; padding: 8px 12px; font-size: 0.9em; }
-
-#choices-container button { width: 100%; background: #333; color: #fff; text-align: left; padding: 12px 15px; margin: 6px 0; border: 1px solid #444; }
-#choices-container button:hover { background: #ffd700; color: #121212; border-color: #ffd700; }
-
-/* Рюкзак, Профиль и Списки построек */
-.hero-profile { display: flex; align-items: center; gap: 15px; background: #252525; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
-.hero-stats-list div { margin: 6px 0; font-size: 1.05em; }
-
-.inventory-grid-vertical { display: flex; flex-direction: column; gap: 6px; }
-.inv-slot-resource { background: #252525; padding: 10px 12px; font-size: 0.9em; border-radius: 6px; border: 1px solid #333; }
-.inv-slot-item { background: #25231a; padding: 10px 12px; font-size: 0.9em; border-radius: 6px; text-align: center; }
-
-/* Шкалы ресурсов королевства */
-.stats-vertical { display: flex; flex-direction: column; gap: 8px; }
-.stat-box { background: #252525; padding: 12px; border-radius: 8px; border: 1px solid #333; font-size: 1.05em; font-weight: 500; }
-
-/* Всплывающие модальные окна */
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100; }
-.modal-card { background: #1e1e1e; padding: 35px; border-radius: 16px; max-width: 450px; width: 90%; text-align: center; position: relative; border: 1px solid #333; }
-.close-btn { position: absolute; top: 15px; right: 15px; background: none; color: #ff4444; font-size: 28px; border: none; cursor: pointer; }
-/* Красивые поля ввода авторизации */
-#auth-block input {
-    width: 85% !important;
-    padding: 10px !important;
-    margin: 6px 0 !important;
-    background: #121212 !important;
-    color: #fff !important;
-    border: 1px solid #444 !important;
-    border-radius: 6px !important;
-    font-size: 0.9em !important;
-    box-sizing: border-box !important;
+/* Кнопки новой эры */
+button {
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 700;
+    border: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
-#auth-block input:focus {
-    border-color: #ffd700 !important;
-    outline: none !important;
-}
-#auth-block div {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 10px;
-}
+.btn-primary { background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%); color: #0d0e15; padding: 16px; width: 100%; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 215, 0, 0.3); }
+.btn-primary:disabled { background: #333; color: #666; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
+.btn-secondary { background: rgba(255,255,255,0.05); color: #fff; padding: 15px; width: 100%; border: 1px solid rgba(255,255,255,0.1); }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); }
+.btn-sm { background: #34c759; color: white; padding: 10px 16px; font-size: 0.9em; }
+.btn-sm:hover { transform: scale(1.05); }
+
+/* Интерактивная Карта */
+.map-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.map-zone { background: rgba(10, 11, 18, 0.4); padding: 16px 2px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.08); font-weight: 700; color: white; font-size: 0.9em; }
+.map-zone:hover { border-color: #ffd700; background: rgba(255, 215, 0, 0.05); }
+
+/* Игровые Шкалы и Склад */
+#event-box { background: rgba(10, 11, 18, 0.5); padding: 25px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); min-height: 150px; text-align: left; }
+.stat-box { background: rgba(255,255,255,0.03); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); font-size: 1.05em; display: flex; justify-content: space-between; }
+.inv-slot-resource, .inv-slot-item { background: rgba(0,0,0,0.2); padding: 12px; font-size: 0.95em; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 6px; }
+
+/* Элементы Достижений и Выбора Перков */
+.perk-card { background: linear-gradient(135deg, #1e2538 0%, #111622 100%); border: 1px solid #3498db; padding: 15px; margin: 8px 0; border-radius: 10px; text-align: left; cursor: pointer; transition: 0.2s; }
+.perk-card:hover { border-color: #ffd700; background: rgba(255,215,0,0.05); }
+.achievement-badge { font-size: 0.85em; background: rgba(255,215,0,0.1); border: 1px dashed #ffd700; padding: 6px; margin: 4px 0; border-radius: 6px; color: #ffd700; }
