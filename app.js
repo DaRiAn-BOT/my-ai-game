@@ -1,3 +1,10 @@
+// Переменные хуков Supabase и авторизации
+const SUPABASE_URL = "https://supabase.co"; 
+const SUPABASE_KEY = "your-anon-key";
+const supabase = (window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+let currentUser = null;
+let dailyStreak = 0;
+let lastLoginDate = null;
 let state = { walls: 100, mana: 50, warmth: 100, gold: 100, food: 80, day: 1, coal: 3, wood: 2, potion: 1, raidTimer: 5 };
 let hero = { strength: 0, wisdom: 0, charisma: 0, class: "knight" };
 let explored = { castle: true, forest: false, mines: false, market: true };
@@ -90,7 +97,7 @@ function buildStructure(type) {
 }
 
 function updateUI() {
-    document.getElementById('gold').innerText = state.walls;
+    document.getElementById('gold').innerText = state.gold;
     document.getElementById('mana').innerText = state.mana;
     document.getElementById('army').innerText = state.warmth;
     document.getElementById('food').innerText = state.gold;
@@ -254,4 +261,82 @@ window.onload = () => {
     document.getElementById('to-creation-btn').onclick = toCreationScreen; document.getElementById('start-game-final-btn').onclick = startGameFinal; document.getElementById('resume-game-btn').onclick = loadSavedGame;
     document.getElementById('about-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'flex'; document.getElementById('close-modal-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'none';
     checkResumeButton();
+};
+// Хук управления сессией Supabase
+async function handleAuth(type) {
+    if (!supabase) return;
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+    const status = document.getElementById('auth-status');
+    if (type === 'register') {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) status.innerText = "❌ Ошибка регистрации";
+        else status.innerText = "✅ Подтвердите Email на почте!";
+    } else if (type === 'login') {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) status.innerText = "❌ Неверный логин/пароль";
+        else {
+            currentUser = data.user;
+            status.innerText = `👑 Король: ${currentUser.email}`;
+            document.getElementById('btn-logout').style.display = 'inline-block';
+            loadCloudProgress();
+        }
+    } else if (type === 'logout') {
+        await supabase.auth.signOut();
+        currentUser = null;
+        status.innerText = "Войдите, чтобы сохранять рекорды";
+        document.getElementById('btn-logout').style.display = 'none';
+    }
+}
+
+// Хардкорный Дейли Стрик
+function checkDailyStreak() {
+    const today = new Date().toDateString();
+    const savedStreak = localStorage.getItem('castle_chronicles_streak');
+    const savedLastLogin = localStorage.getItem('castle_chronicles_last_login');
+    if (savedStreak) dailyStreak = parseInt(savedStreak);
+    if (savedLastLogin) lastLoginDate = savedLastLogin;
+    const textBonus = document.getElementById('streak-bonus-text');
+    if (lastLoginDate === today) {
+        textBonus.innerText = "🧙‍♂️ Сегодняшний бонус уже получен!";
+    } else {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (lastLoginDate === yesterday.toDateString()) {
+            dailyStreak += 1; giveStreakBonus();
+        } else if (lastLoginDate !== null) {
+            dailyStreak = 1; giveStreakBonus();
+            textBonus.innerText = "💨 Огонь угас! Серия сброшена до 1 дня.";
+        } else {
+            dailyStreak = 1; giveStreakBonus();
+        }
+        lastLoginDate = today;
+        localStorage.setItem('castle_chronicles_streak', dailyStreak.toString());
+        localStorage.setItem('castle_chronicles_last_login', lastLoginDate);
+    }
+    document.getElementById('streak-count').innerText = dailyStreak;
+}
+
+function giveStreakBonus() {
+    state.coal += 1;
+    document.getElementById('streak-bonus-text').innerText = "🎁 Бонус получен: +1 Уголь разведки ✏️!";
+    if (typeof updateUI === "function") updateUI();
+}
+
+async function saveCloudProgress() {
+    if (!supabase || !currentUser) return;
+    await supabase.from('game_saves').upsert({ user_id: currentUser.id, game_state: state, hero_stats: hero, current_artifact: artifact, day_record: state.day });
+}
+
+async function loadCloudProgress() {
+    if (!supabase || !currentUser) return;
+    const { data } = await supabase.from('game_saves').select('*').eq('user_id', currentUser.id).single();
+    if (data) { state = data.game_state; hero = data.hero_stats; artifact = data.current_artifact; checkResumeButton(); }
+}
+
+// Дополнение к onload для автоматического запуска стрика
+const oldOnload = window.onload;
+window.onload = () => {
+    if (oldOnload) oldOnload();
+    checkDailyStreak();
 };

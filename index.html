@@ -12,6 +12,17 @@
     <div id="main-menu" class="menu-card">
         <span class="subtitle">Магия • Выживание • Тактика</span>
         <h1>Замковые Хроники 🏰</h1>
+                <!-- 🔐 БЛОК АВТОРИЗАЦИИ И РЕГИСТРАЦИИ -->
+        <div id="auth-block" style="margin-bottom: 25px; background: #252525; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+            <p id="auth-status" style="color: #ffd700; margin: 0 0 10px 0; font-size: 0.9em;">Войдите, чтобы сохранять рекорды</p>
+            <input type="email" id="auth-email" placeholder="Email" style="width: 80px; padding: 8px; margin: 2px; background: #121212; color: #fff; border: 1px solid #444; border-radius: 4px;">
+            <input type="password" id="auth-password" placeholder="Пароль" style="width: 80px; padding: 8px; margin: 2px; background: #121212; color: #fff; border: 1px solid #444; border-radius: 4px;">
+            <div style="margin-top: 8px;">
+                <button onclick="handleAuth('login')" class="btn-sm" style="padding: 6px 12px; font-size: 0.8em;">Войти</button>
+                <button onclick="handleAuth('register')" class="btn-sm" style="padding: 6px 12px; font-size: 0.8em; background: #2196f3;">Регистрация</button>
+                <button onclick="handleAuth('logout')" id="btn-logout" class="btn-sm" style="padding: 6px 12px; font-size: 0.8em; background: #f44336; display: none;">Выйти</button>
+            </div>
+        </div>
         <div class="menu-buttons">
             <button id="to-creation-btn" class="btn-primary">Начать правление 👑</button>
             <button id="resume-game-btn" class="btn-primary" style="display:none;background:#4caf50;">Продолжить ⏳</button>
