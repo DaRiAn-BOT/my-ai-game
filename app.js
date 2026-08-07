@@ -272,3 +272,57 @@ window.onload = () => {
     document.getElementById('about-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'flex'; document.getElementById('close-modal-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'none';
     document.getElementById('leaderboard-list').innerHTML = "<li>Король Дариан — 14 дней</li><li>Рыцарь Бронн — 9 дней</li>"; checkResumeButton();
 };
+const SUPABASE_URL = "https://supabase.co"; 
+const SUPABASE_KEY = "your-anon-key";
+const supabase = (window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let state = { walls: 100, mana: 50, warmth: 100, gold: 100, food: 80, day: 1, coal: 3, wood: 2, potion: 1, raidTimer: 5 };
+let hero = { strength: 0, wisdom: 0, charisma: 0, class: "knight", nickname: "Король" };
+let explored = { castle: true, forest: false, mines: false, market: true };
+let buildings = { tower: false, greenhouse: false };
+let creationPoints = 5, artifact = "Нет", currentWeather = "Ясно ☀️", isGameOver = false, dailyStreak = 0, lastLoginDate = null, currentUser = null;
+
+// Координаты игрока на карте 5х5 (спавн в центре - 2,2)
+let playerX = 2;
+let playerY = 2;
+
+// Двумерная карта объектов: C - Цитадель, F - Лес, M - Шахты, . - Пусто
+const mapData = [
+    ['F', '.', 'F', '.', 'M'],
+    ['.', 'C', '.', 'C', '.'],
+    ['F', '.', 'C', '.', 'M'],
+    ['.', 'M', '.', 'F', '.'],
+    ['M', '.', 'F', '.', 'M']
+];
+
+// Память тумана войны (какие клетки открыты)
+let discoveredCells = ["2,2", "1,1", "1,3", "3,1", "2,1", "2,3", "1,2", "3,2"];
+
+function initMap() {
+    const container = document.getElementById('grid-map-container');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    for (let y = 0; y < 5; y++) {
+        for (let x = 0; x < 5; x++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            const coord = `${x},${y}`;
+            
+            if (x === playerX && y === playerY) {
+                cell.classList.add('player');
+                cell.innerText = '🧙‍♂️';
+            } else if (discoveredCells.includes(coord)) {
+                const type = mapData[y][x];
+                if (type === 'C') cell.innerText = '🏰';
+                else if (type === 'F') cell.innerText = '🌲';
+                else if (type === 'M') cell.innerText = '⛏️';
+                else cell.innerText = '·';
+            } else {
+                cell.classList.add('fog');
+                cell.innerText = '☁️';
+            }
+            container.appendChild(cell);
+        }
+    }
+}
