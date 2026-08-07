@@ -228,7 +228,6 @@ function loadSavedGame() {
     }
 }
 function checkResumeButton() { document.getElementById('resume-game-btn').style.display = localStorage.getItem('winter_chronicles_save') ? 'block' : 'none'; }
-function checkResumeButton() { document.getElementById('resume-game-btn').style.display = localStorage.getItem('winter_chronicles_save') ? 'block' : 'none'; }
 function backToMenu() { document.getElementById('game-screen').style.display = 'none'; document.getElementById('creation-screen').style.display = 'none'; document.getElementById('main-menu').style.display = 'block'; checkResumeButton(); }
 
 function toCreationScreen() {
