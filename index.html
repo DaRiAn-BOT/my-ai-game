@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Выживание в Буране</title>
+    <title>Осада Цитадели</title>
     <link rel="stylesheet" href="style.css">
     <!-- Подключение Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,17 +11,26 @@
 
     <!-- Главное меню (Авторизация) -->
     <div id="main-menu" class="screen">
-        <h1>❄️ Выживание в Буране</h1>
+        <h1>🏰 Осада Цитадели</h1>
         <div class="panel">
             <h2>Регистрация / Вход</h2>
+            
             <input type="text" id="auth-nickname" placeholder="Имя Правителя (Никнейм)">
             <p id="auth-status"></p>
-            <button onclick="handleAuth('register')">Зарегистрироваться</button>
-            <button onclick="handleAuth('login')">Войти</button>
+            
+            <div class="auth-buttons">
+                <button onclick="handleAuth('register')">Создать профиль</button>
+                <button onclick="handleAuth('login')">Войти</button>
+            </div>
+            
+            <div class="auth-divider">или</div>
+            
+            <button class="google-btn" onclick="loginWithGoogle()">🌐 Войти через Google</button>
+            <button class="guest-btn" onclick="handleAuth('guest')">👤 Играть как Гость</button>
+            
             <br><br>
-            <button id="to-creation-btn" disabled>Начать правление 👑</button>
+            <button id="to-creation-btn" disabled>Начать игру ➔</button>
         </div>
-        <button id="about-btn" class="secondary-btn">Об игре</button>
     </div>
 
     <!-- Экран создания персонажа -->
@@ -48,8 +57,6 @@
 
     <!-- Главный игровой экран -->
     <div id="game-screen" class="screen" style="display: none;">
-        
-        <!-- Верхняя панель (Ресурсы) -->
         <header class="top-bar">
             <div class="title-info">
                 <span id="hero-live-avatar">👤</span> <span id="hero-title">Имя (Класс)</span>
@@ -58,9 +65,9 @@
         </header>
 
         <div class="game-layout">
-            <!-- Левая панель: Статусы и База -->
+            <!-- Левая панель -->
             <aside class="sidebar">
-                <h3>🏰 Состояние Базы</h3>
+                <h3>🏰 База</h3>
                 <ul>
                     <li>🧱 Стены: <b id="walls">100</b>%</li>
                     <li>🔥 Тепло: <b id="warmth">100</b>%</li>
@@ -68,11 +75,11 @@
                     <li>🪙 Казна: <b id="gold">100</b></li>
                     <li>🌾 Еда: <b id="food">80</b></li>
                 </ul>
-                <h3>📊 Статистика</h3>
+                <h3>📊 Герой</h3>
                 <ul>
-                    <li>День: <b id="day">1</b></li>
-                    <li>До рейда: <b id="raid-timer">5</b> дн.</li>
-                    <li>Сила: <b id="game-strength">0</b> | Муд: <b id="game-wisdom">0</b></li>
+                    <li>День: <b id="day">1</b> (До рейда: <b id="raid-timer">5</b>)</li>
+                    <li>Сила: <b id="game-strength">0</b> | Мудрость: <b id="game-wisdom">0</b></li>
+                    <li>Харизма: <b id="game-charisma">0</b></li>
                 </ul>
                 <h3>🎒 Инвентарь</h3>
                 <ul>
@@ -83,10 +90,9 @@
                 </ul>
             </aside>
 
-            <!-- Центр: Карта и управление -->
+            <!-- Центр: Карта -->
             <main class="map-section">
                 <div id="grid-map-container" class="map-grid"></div>
-                
                 <div class="controls">
                     <button onclick="movePlayer(0, -1)">⬆️ Север</button><br>
                     <button onclick="movePlayer(-1, 0)">⬅️ Запад</button>
@@ -95,9 +101,9 @@
                 </div>
             </main>
 
-            <!-- Правая панель: События и Действия -->
+            <!-- Правая панель -->
             <aside class="sidebar actions-sidebar">
-                <h3>📜 Журнал событий</h3>
+                <h3>📜 События</h3>
                 <div id="event-board" class="event-board">
                     <p id="event-text">Вы прибыли в Цитадель. Вокруг бушует метель...</p>
                     <div id="choices-container" class="choices"></div>
@@ -115,16 +121,6 @@
             </aside>
         </div>
     </div>
-
-    <!-- Модальное окно (Об игре) -->
-    <div id="modal-overlay" class="modal-overlay" style="display: none;">
-        <div class="modal">
-            <h2>Об игре</h2>
-            <p>Выживайте в суровых условиях бурана. Следите за запасами тепла и целостностью стен вашей Цитадели. Добывайте ресурсы на карте и отражайте набеги дикарей!</p>
-            <button id="close-modal-btn">Закрыть</button>
-        </div>
-    </div>
-
     <script src="app.js"></script>
 </body>
 </html>

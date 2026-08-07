@@ -5,13 +5,12 @@ const supabase = (window.supabase) ? window.supabase.createClient(SUPABASE_URL, 
 
 // Состояние игры
 let state = { walls: 100, mana: 50, warmth: 100, gold: 100, food: 80, day: 1, coal: 3, wood: 2, potion: 1, raidTimer: 5 };
-let hero = { strength: 0, wisdom: 0, charisma: 0, class: "knight", nickname: "Король" };
+let hero = { strength: 0, wisdom: 0, charisma: 0, class: "knight", nickname: "" };
 let buildings = { tower: false, greenhouse: false };
 let creationPoints = 5, artifact = "Нет", currentWeather = "Ясно ☀️", isGameOver = false;
 
 // Карта
-let playerX = 2;
-let playerY = 2;
+let playerX = 2, playerY = 2;
 const mapData = [
     ['F', '.', 'F', '.', 'M'],
     ['.', 'C', '.', 'C', '.'],
@@ -19,9 +18,8 @@ const mapData = [
     ['.', 'M', '.', 'F', '.'],
     ['M', '.', 'F', '.', 'M']
 ];
-let discoveredCells = ["2,2"]; // Изначально открыта только стартовая клетка
+let discoveredCells = ["2,2"];
 
-// Отрисовка карты (Новая логика для CSS-Grid)
 function initMap() {
     const container = document.getElementById('grid-map-container');
     if (!container) return;
@@ -33,58 +31,33 @@ function initMap() {
             cell.className = 'cell';
             const coord = `${x},${y}`;
             
-            // Если клетка открыта
             if (discoveredCells.includes(coord)) {
                 const type = mapData[y][x];
-                if (type === 'C') {
-                    cell.innerText = '🏰'; 
-                    cell.style.background = '#94a3b8'; // Цвет замка
-                }
-                else if (type === 'F') {
-                    cell.innerText = '🌲'; 
-                    cell.style.background = '#86efac'; // Цвет леса
-                }
-                else if (type === 'M') {
-                    cell.innerText = '⛏️'; 
-                    cell.style.background = '#fcd34d'; // Цвет шахт
-                }
-                else {
-                    cell.innerText = '❄️'; // Пустошь
-                    cell.style.background = '#e0f2fe';
-                }
+                if (type === 'C') { cell.innerText = '🏰'; cell.style.background = '#94a3b8'; }
+                else if (type === 'F') { cell.innerText = '🌲'; cell.style.background = '#86efac'; }
+                else if (type === 'M') { cell.innerText = '⛏️'; cell.style.background = '#fcd34d'; }
+                else { cell.innerText = '❄️'; cell.style.background = '#e0f2fe'; }
             } else {
-                // Туман войны
-                cell.classList.add('fog');
-                cell.innerText = '☁️';
+                cell.classList.add('fog'); cell.innerText = '☁️';
             }
 
-            // Отметка игрока
             if (x === playerX && y === playerY) {
-                cell.classList.add('player');
-                cell.innerText = '🧙‍♂️'; // Можно заменить аватар в зависимости от класса, но оставим мага по умолчанию на карте
+                cell.classList.add('player'); cell.innerText = '🧙‍♂️';
             }
-            
             container.appendChild(cell);
         }
     }
 }
 
-// Передвижение
 function movePlayer(dx, dy) {
     if (isGameOver) return;
-    const newX = playerX + dx;
-    const newY = playerY + dy;
+    const newX = playerX + dx, newY = playerY + dy;
     
     if (newX >= 0 && newX < 5 && newY >= 0 && newY < 5) {
-        playerX = newX;
-        playerY = newY;
-        
+        playerX = newX; playerY = newY;
         const coord = `${playerX},${playerY}`;
-        if (!discoveredCells.includes(coord)) {
-            discoveredCells.push(coord);
-        }
+        if (!discoveredCells.includes(coord)) discoveredCells.push(coord);
         
-        // Логика времени и выживания
         state.raidTimer -= 1;
         state.day += 1;
         let modifier = currentWeather === "Снежная буря 🌨️" ? 2 : 1;
@@ -104,7 +77,6 @@ function movePlayer(dx, dy) {
     }
 }
 
-// События на карте
 function triggerTileEvent() {
     const tileType = mapData[playerY][playerX];
     const container = document.getElementById('choices-container');
@@ -112,16 +84,10 @@ function triggerTileEvent() {
     
     if (tileType === 'F') {
         document.getElementById('event-text').innerText = "🌲 Вы зашли в Лесной массив! На разведчиков напал 👹 Снежный Тролль!";
-        createChoiceButton("Оказать сопротивление (-25% Стен)", () => { 
-            state.walls = Math.max(0, state.walls - 25); 
-            updateUI(); checkGameOver(); container.innerHTML = ''; 
-        });
+        createChoiceButton("Оказать сопротивление (-25% Стен)", () => { state.walls = Math.max(0, state.walls - 25); updateUI(); checkGameOver(); container.innerHTML = ''; });
     } else if (tileType === 'M') {
         document.getElementById('event-text').innerText = "⛏️ Вы вошли в сектор Шахт! Рабочие пробили новый богатый забой.";
-        createChoiceButton("Начать добычу (+20 Золота, -5 Еды)", () => { 
-            state.gold += 20; state.food -= 5; 
-            updateUI(); container.innerHTML = ''; 
-        });
+        createChoiceButton("Начать добычу (+20 Золота, -5 Еды)", () => { state.gold += 20; state.food -= 5; updateUI(); container.innerHTML = ''; });
     } else if (tileType === 'C') {
         document.getElementById('event-text').innerText = "🏰 Вы в Замке. Здесь безопасно.";
     } else {
@@ -130,24 +96,15 @@ function triggerTileEvent() {
 }
 
 function createChoiceButton(text, onClickFunc) {
-    const container = document.getElementById('choices-container');
     const btn = document.createElement('button');
-    btn.innerText = text;
-    btn.onclick = onClickFunc;
-    container.appendChild(btn);
+    btn.innerText = text; btn.onclick = onClickFunc;
+    document.getElementById('choices-container').appendChild(btn);
 }
 
-// Магия и рынок
 function castSpell(t) {
     if (isGameOver) return;
-    if (t === 'shield' && state.mana >= 20) { 
-        state.mana -= 20; state.walls = Math.min(100, state.walls + 25); 
-        document.getElementById('event-text').innerText = "🛡️ Магический щит восстановил стены!";
-    }
-    else if (t === 'fire' && state.mana >= 30) { 
-        state.mana -= 30; state.warmth = Math.min(100, state.warmth + 35); 
-        document.getElementById('event-text').innerText = "🔥 Заклинание Огня! Тепло восстановлено на +35%."; 
-    }
+    if (t === 'shield' && state.mana >= 20) { state.mana -= 20; state.walls = Math.min(100, state.walls + 25); document.getElementById('event-text').innerText = "🛡️ Магический щит восстановил стены!"; }
+    else if (t === 'fire' && state.mana >= 30) { state.mana -= 30; state.warmth = Math.min(100, state.warmth + 35); document.getElementById('event-text').innerText = "🔥 Заклинание Огня! Тепло восстановлено на +35%."; }
     updateUI();
 }
 
@@ -156,47 +113,28 @@ function openMarket() {
     document.getElementById('event-text').innerText = "⚖️ Торговый Рынок Цитадели:";
     const c = document.getElementById('choices-container'); c.innerHTML = '';
     
-    const b1 = document.createElement('button'); 
-    b1.innerText = "Продать 1 Дрова 🪵 ➔ Получить 25 Казны 🪙";
-    if (state.wood > 0) {
-        b1.onclick = () => { state.wood -= 1; state.gold += 25; updateUI(); openMarket(); };
-    } else { b1.disabled = true; }
+    const b1 = document.createElement('button'); b1.innerText = "Продать 1 Дрова 🪵 ➔ Получить 25 Казны 🪙";
+    if (state.wood > 0) { b1.onclick = () => { state.wood -= 1; state.gold += 25; updateUI(); openMarket(); }; } else { b1.disabled = true; }
     
-    const b2 = document.createElement('button'); 
-    b2.innerText = "Купить Еду 🌾 ➔ Тратит 20 Казны 🪙 (+20 Еды)";
-    if (state.gold >= 20) {
-        b2.onclick = () => { state.gold -= 20; state.food += 20; updateUI(); openMarket(); };
-    } else { b2.disabled = true; }
+    const b2 = document.createElement('button'); b2.innerText = "Купить Еду 🌾 ➔ Тратит 20 Казны 🪙 (+20 Еды)";
+    if (state.gold >= 20) { b2.onclick = () => { state.gold -= 20; state.food += 20; updateUI(); openMarket(); }; } else { b2.disabled = true; }
     
     c.appendChild(b1); c.appendChild(b2);
 }
 
-// Рейды и постройки
 function checkRaids() {
     if (state.raidTimer <= 0) {
         state.raidTimer = 5;
         let damage = hero.strength >= 4 ? 10 : 25;
         state.walls = Math.max(0, state.walls - damage);
-        
         document.getElementById('event-text').innerText = `🚨 НАБЕГ ДИКАРЕЙ! Осадные орудия нанесли урон стенам: -${damage}%`;
         document.getElementById('choices-container').innerHTML = '';
         checkGameOver();
     }
 }
 
-function buildStructure(t) { 
-    if (!isGameOver && !buildings[t] && state.gold >= 50) { 
-        state.gold -= 50; buildings[t] = true; 
-        document.getElementById('event-text').innerText = "🏗️ Постройка успешно возведена!";
-        updateUI(); 
-    } 
-}
-function usePotion() { 
-    if (!isGameOver && state.potion > 0) { 
-        state.potion -= 1; state.warmth = Math.min(100, state.warmth + 40); 
-        updateUI(); 
-    } 
-}
+function buildStructure(t) { if (!isGameOver && !buildings[t] && state.gold >= 50) { state.gold -= 50; buildings[t] = true; document.getElementById('event-text').innerText = "🏗️ Постройка успешно возведена!"; updateUI(); } }
+function usePotion() { if (!isGameOver && state.potion > 0) { state.potion -= 1; state.warmth = Math.min(100, state.warmth + 40); updateUI(); } }
 
 function checkGameOver() {
     if (state.walls <= 0) {
@@ -206,7 +144,7 @@ function checkGameOver() {
     }
 }
 
-// Обновление интерфейса (ИСПРАВЛЕННОЕ)
+// Обновление UI без ошибок
 function updateUI() {
     document.getElementById('walls').innerText = state.walls; 
     document.getElementById('warmth').innerText = state.warmth;
@@ -218,7 +156,8 @@ function updateUI() {
     document.getElementById('raid-timer').innerText = state.raidTimer; 
     
     document.getElementById('game-strength').innerText = hero.strength; 
-    document.getElementById('game-wisdom').innerText = hero.wisdom; 
+    document.getElementById('game-wisdom').innerText = hero.wisdom;
+    document.getElementById('game-charisma').innerText = hero.charisma; // <- Ошибка была тут, теперь работает!
     
     document.getElementById('slot-1').innerText = `🪵 Дрова: ${state.wood}`; 
     document.getElementById('slot-2').innerText = `✏️ Уголь: ${state.coal}`;
@@ -230,19 +169,28 @@ function updateUI() {
     document.getElementById('weather-banner').innerText = `Погода: ${currentWeather}`;
 }
 
-// Экраны и авторизация
+// ==== СИСТЕМА АВТОРИЗАЦИИ ==== //
+
 function handleAuth(type) {
-    const nickname = document.getElementById('auth-nickname').value;
+    const nicknameInput = document.getElementById('auth-nickname');
     const status = document.getElementById('auth-status');
     const startBtn = document.getElementById('to-creation-btn');
     
-    if (!nickname) { 
+    if (type === 'guest') {
+        hero.nickname = "Гость";
+        status.style.color = "#34c759";
+        status.innerText = `👤 Вы играете как Гость`;
+        startBtn.removeAttribute('disabled');
+        return;
+    }
+    
+    if (!nicknameInput.value) { 
         status.style.color = "var(--danger)";
         status.innerText = "❌ Введите имя Правителя!"; 
         return; 
     }
     
-    hero.nickname = nickname;
+    hero.nickname = nicknameInput.value;
     status.style.color = "#34c759";
     if (type === 'register') status.innerText = `✅ Профиль ${hero.nickname} зарегистрирован!`;
     else status.innerText = `👑 Авторизован под ником: ${hero.nickname}`;
@@ -250,6 +198,28 @@ function handleAuth(type) {
     startBtn.removeAttribute('disabled');
 }
 
+async function loginWithGoogle() {
+    const status = document.getElementById('auth-status');
+    
+    if (supabase) {
+        // Код для настоящего Supabase Google Login
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+            if (error) throw error;
+        } catch (error) {
+            status.style.color = "var(--danger)";
+            status.innerText = "❌ Ошибка входа Google: " + error.message;
+        }
+    } else {
+        // Заглушка, если Supabase еще не настроен
+        hero.nickname = "Игрок из Google";
+        status.style.color = "#34c759";
+        status.innerText = `🌐 Успешный вход через Google!`;
+        document.getElementById('to-creation-btn').removeAttribute('disabled');
+    }
+}
+
+// Переход между экранами
 function toCreationScreen() {
     document.getElementById('main-menu').style.display = 'none';
     document.getElementById('creation-screen').style.display = 'block';
@@ -257,8 +227,7 @@ function toCreationScreen() {
 
 function upgradeStat(s) { 
     if (creationPoints > 0) { 
-        creationPoints -= 1; 
-        hero[s] += 1; 
+        creationPoints -= 1; hero[s] += 1; 
         document.getElementById('creation-points').innerText = creationPoints; 
         document.getElementById(`creation-${s}`).innerText = hero[s]; 
     } 
@@ -278,14 +247,11 @@ function startGameFinal() {
     document.getElementById('creation-screen').style.display = 'none'; 
     document.getElementById('game-screen').style.display = 'block';
     
-    initMap(); 
-    updateUI();
+    initMap(); updateUI();
 }
 
-// Инициализация кнопок
+// Запуск
 window.onload = () => {
     document.getElementById('to-creation-btn').onclick = toCreationScreen;
     document.getElementById('start-game-final-btn').onclick = startGameFinal;
-    document.getElementById('about-btn').onclick = () => { document.getElementById('modal-overlay').style.display = 'flex'; };
-    document.getElementById('close-modal-btn').onclick = () => { document.getElementById('modal-overlay').style.display = 'none'; };
 };
