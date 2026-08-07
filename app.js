@@ -150,29 +150,28 @@ async function handleAuth(type) {
     const nickname = document.getElementById('auth-nickname').value;
     const status = document.getElementById('auth-status');
     const startBtn = document.getElementById('to-creation-btn');
-    if (!nickname) { status.innerText = "❌ Введите имя Правителя!"; return; }
-    hero.nickname = nickname;
+    
+    if (!nickname) { 
+        status.style.color = "#ff4444";
+        status.innerText = "❌ Введите имя Правителя перед входом!"; 
+        return; 
+    }
+    
+       hero.nickname = nickname;
     status.style.color = "#34c759";
-    status.innerText = `👑 Авторизован под ником: ${hero.nickname}`;
+    if (type === 'register') {
+        status.innerText = `✅ Профиль ${hero.nickname} успешно зарегистрирован!`;
+    } else {
+        status.innerText = `👑 Авторизован под ником: ${hero.nickname}`;
+    }
     startBtn.removeAttribute('disabled');
     startBtn.innerText = "Начать правление 👑";
-}
-
-function endGame() { isGameOver = true; document.getElementById('event-text').innerText = "Ваша Цитадель пала под натиском метели. Правление окончено."; const c = document.getElementById('choices-container'); c.innerHTML = ''; const b = document.createElement('button'); b.className = "btn-primary"; b.innerText = "В меню 🔄"; b.onclick = function() { backToMenu(); }; c.appendChild(b); }
-function saveAndExit() { if (isGameOver) return; backToMenu(); }
-function backToMenu() { document.getElementById('game-screen').style.display = 'none'; document.getElementById('creation-screen').style.display = 'none'; document.getElementById('main-menu').style.display = 'block'; }
-function toCreationScreen() { document.getElementById('main-menu').style.display = 'none'; document.getElementById('creation-screen').style.display = 'block'; }
-
-function startGameFinal() {
-    if (hero.class === 'knight') { hero.strength += 3; artifact = "Стальной Меч"; }
-    document.getElementById('hero-title').innerText = `${hero.nickname} (${hero.class === 'knight' ? 'Рыцарь' : 'Правитель'}) 🛡️`;
-    document.getElementById('creation-screen').style.display = 'none'; document.getElementById('game-screen').style.display = 'grid';
-    initMap(); updateUI();
+    document.getElementById('btn-logout').style.display = 'inline-block';
 }
 
 window.onload = () => {
     document.getElementById('to-creation-btn').onclick = toCreationScreen;
     document.getElementById('start-game-final-btn').onclick = startGameFinal;
-    document.getElementById('about-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'flex';
-    document.getElementById('close-modal-btn').onclick = () => document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('about-btn').onclick = () => { document.getElementById('modal-overlay').style.display = 'flex'; };
+    document.getElementById('close-modal-btn').onclick = () => { document.getElementById('modal-overlay').style.display = 'none'; };
 };
