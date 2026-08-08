@@ -23,6 +23,7 @@ function setAuthMode(mode) {
     $("login-tab").classList.toggle("selected", !registering);
     $("register-tab").classList.toggle("selected", registering);
     $("auth-password").autocomplete = registering ? "new-password" : "current-password";
+    $("google-auth").classList.toggle("hidden", registering);
 }
 
 function authMessage(text, success = false) {
@@ -126,7 +127,7 @@ function applySession(session) {
 function updateAccountUI() {
     const signedIn = Boolean(currentUser);
     $("account-status").textContent = signedIn
-        ? `${isGuest ? "👤 Гость" : "✅ " + (currentUser.email || userLabel())} — прогресс сохраняется`
+        ? `${isGuest ? "👤 Гостевой режим" : "✅ Аккаунт подключён"} — прогресс сохраняется`
         : "Вы не вошли в аккаунт";
     $("logout").classList.toggle("hidden", !signedIn);
     $("open-login").classList.toggle("hidden", signedIn);

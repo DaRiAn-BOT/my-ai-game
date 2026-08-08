@@ -24,8 +24,9 @@ button:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-
 button:disabled { opacity: .48; cursor: not-allowed; }
 .primary { width: 100%; padding: 13px 18px; color: #17120a; background: var(--gold); border: 0; font-weight: 800; }
 .leaderboard { text-align: left; color: var(--muted); min-height: 24px; }
-.menu-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 24px; }
-.menu-actions button { padding: 10px 5px; }
+.menu-actions { display: grid; grid-template-columns: 1fr; gap: 9px; margin: 10px 0 24px; }
+.menu-actions button, .large-menu-button, .logout-button { width: 100%; padding: 13px 18px; }
+.logout-button { margin-top: 22px; color: #ffd9df; border-color: var(--red); background: #3a1e29; }
 .account-status { margin: 20px 0 12px; padding: 10px; color: var(--muted); background: var(--box); border-radius: 9px; }
 .auth-card, .story-card { position: relative; text-align: left; }
 .story-card { width: min(650px, 100%); padding: 38px; }
@@ -81,4 +82,4 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 .toast { position: fixed; left: 50%; bottom: 25px; transform: translate(-50%, 25px); padding: 11px 18px; background: #381f29; border: 1px solid var(--red); border-radius: 9px; opacity: 0; pointer-events: none; transition: .2s; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 @media (max-width: 1050px) { .game-layout { grid-template-columns: 230px 1fr; }.game-layout > :last-child { grid-column: 1 / -1; width: 100%; }.history { max-height: 150px; } }
-@media (max-width: 720px) { .app { padding: 8px; }.game-layout { grid-template-columns: 1fr; }.game-layout > :last-child { grid-column: auto; }.class-grid, .location-grid, .spell-grid { grid-template-columns: 1fr; }.game-header { align-items: flex-start; gap: 10px; flex-wrap: wrap; }.weather { font-size: .8rem; }.menu-card, .creation-card, .story-card { padding: 24px 18px; }.menu-actions { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .app { padding: 8px; }.game-layout { grid-template-columns: 1fr; }.game-layout > :last-child { grid-column: auto; }.class-grid, .location-grid, .spell-grid { grid-template-columns: 1fr; }.game-header { align-items: flex-start; gap: 10px; flex-wrap: wrap; }.weather { font-size: .8rem; }.menu-card, .creation-card, .story-card { padding: 24px 18px; } }
