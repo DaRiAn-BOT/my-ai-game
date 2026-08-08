@@ -90,6 +90,10 @@ const locationEvents = {
         { title: "Спор советников", text: "Совет не может решить, чему отдать приоритет.", choices: [
             ["Усилить оборону: +10 стен", () => change({ walls: 10 })],
             ["Поддержать магов: +18 маны", () => change({ mana: 18 })]
+        ]},
+        { title: "Пленные разведчики", text: "Стража поймала двух вражеских разведчиков у ворот.", choices: [
+            ["Допросить силой", () => hero.strength >= 4 ? change({ gold: 25 }) : change({ warmth: -6 })],
+            ["Убедить перейти на нашу сторону", () => hero.charisma >= 4 ? change({ walls: 18, food: 10 }) : change({ walls: 5 })]
         ]}
     ],
     forest: [
@@ -104,6 +108,10 @@ const locationEvents = {
         { title: "Древнее дерево", text: "В корнях мерцают синие руны.", choices: [
             ["Изучить руны", () => hero.wisdom >= 3 ? change({ mana: 25 }) : change({ mana: 10, warmth: -8 })],
             ["Срубить дерево: +4 дрова", () => change({ wood: 4 })]
+        ]},
+        { title: "Лагерь браконьеров", text: "Браконьеры вырубают заповедную рощу и прячут добычу.", choices: [
+            ["Разогнать их силой", () => hero.strength >= 3 ? change({ wood: 5, food: 12 }) : change({ warmth: -10, wood: 2 })],
+            ["Предложить службу замку", () => hero.charisma >= 3 ? change({ food: 25 }) : change({ food: 8 })]
         ]}
     ],
     mines: [
@@ -114,6 +122,10 @@ const locationEvents = {
         { title: "Подземное озеро", text: "Вода светится магическим светом.", choices: [
             ["Наполнить резервуары: +30 маны", () => change({ mana: 30 })],
             ["Не рисковать: +2 угля", () => change({ coal: 2 })]
+        ]},
+        { title: "Спящий каменный червь", text: "Огромное существо лежит прямо на богатой угольной жиле.", choices: [
+            ["Прогнать силой", () => hero.strength >= 5 ? change({ coal: 6, gold: 20 }) : change({ walls: -10, coal: 2 })],
+            ["Усыпить рунами", () => hero.wisdom >= 4 ? change({ coal: 5, mana: 12 }) : change({ mana: -12, coal: 1 })]
         ]}
     ],
     village: [
@@ -125,9 +137,25 @@ const locationEvents = {
             ["Принять: −12 еды, +12 стен", () => pay({ food: 12 }, () => change({ walls: 12 }), "Не хватает еды.")],
             ["Отказать", () => addHistory("Солдаты ушли на юг.")]
         ]},
-        { title: "Ссора семей", text: "Две семьи спорят из-за амбара.", choices: [
-            ["Рассудить лично", () => hero.charisma >= 3 ? change({ food: 20 }) : change({ food: 8 })],
-            ["Не вмешиваться", () => change({ food: 5 })]
+        { title: "Пропавшие дети", text: "Трое детей не вернулись из снежной долины до темноты.", choices: [
+            ["Возглавить поиски", () => hero.strength >= 3 ? change({ food: 18, warmth: -5 }) : change({ warmth: -18 })],
+            ["Организовать жителей", () => hero.charisma >= 3 ? change({ food: 25 }) : change({ food: 6 })]
+        ]},
+        { title: "Болезнь в деревне", text: "Неизвестная лихорадка охватила несколько домов.", choices: [
+            ["Исследовать лекарство", () => hero.wisdom >= 4 ? change({ potions: 2, food: 15 }) : change({ potions: -1, food: 5 })],
+            ["Отправить припасы: −15 еды", () => pay({ food: 15 }, () => change({ gold: 25 }), "Не хватает еды для помощи.")]
+        ]},
+        { title: "Сломанная мельница", text: "Без мельницы деревня скоро останется без муки.", choices: [
+            ["Отдать 2 дерева на ремонт", () => pay({ wood: 2 }, () => change({ food: 35 }), "Не хватает дерева.")],
+            ["Найти мастеров словами", () => hero.charisma >= 4 ? change({ food: 28 }) : change({ food: 8 })]
+        ]},
+        { title: "Вражеский лазутчик", text: "Селяне заметили незнакомца, который зарисовывал дорогу к замку.", choices: [
+            ["Поймать лазутчика", () => hero.strength >= 3 ? change({ walls: 15, gold: 10 }) : change({ walls: -5 })],
+            ["Передать ему ложные сведения", () => hero.wisdom >= 3 ? change({ walls: 20 }) : change({ walls: 3 })]
+        ]},
+        { title: "Беженцы с севера", text: "У ворот деревни собрались люди, спасшиеся от ледяной орды.", choices: [
+            ["Принять всех: −20 еды, +25 стен", () => pay({ food: 20 }, () => change({ walls: 25 }), "Не хватает еды.")],
+            ["Уговорить охотников служить", () => hero.charisma >= 5 ? change({ walls: 20, food: 12 }) : change({ walls: 6 })]
         ]}
     ],
     ruins: [
@@ -142,9 +170,42 @@ const locationEvents = {
         { title: "Ледяной голем", text: "Страж руин преграждает дорогу к сокровищу.", choices: [
             ["Сразиться", () => hero.strength >= 4 ? change({ gold: 55 }) : change({ walls: -12, gold: 20 })],
             ["Отвлечь магией: −18 маны, +35 золота", () => pay({ mana: 18 }, () => change({ gold: 35 }), "Не хватает маны.")]
+        ]},
+        { title: "Зеркало прошлого", text: "В разбитом зеркале видна грядущая атака на цитадель.", choices: [
+            ["Расшифровать видение", () => hero.wisdom >= 5 ? change({ walls: 28, mana: 15 }) : change({ mana: -10, walls: 8 })],
+            ["Продать осколки: +30 золота", () => change({ gold: 30 })]
         ]}
     ]
 };
+
+// Эти события могут произойти в любой части владений между обычными путешествиями.
+const worldEvents = [
+    { title: "☃️ Атака живых снеговиков", text: "Заколдованные снеговики закидали цитадель ледяными глыбами. Тепло стремительно уходит!", choices: [
+        ["Растопить огнём: −20 маны", () => state.mana >= 20 ? pay({ mana: 20 }, () => change({ warmth: -5 }), "") : change({ warmth: -30 })],
+        ["Разбить снеговиков", () => hero.strength >= 4 ? change({ warmth: -10, walls: -3 }) : change({ warmth: -30, walls: -8 })]
+    ]},
+    { title: "🌬️ Дыра в отопительных трубах", text: "Ледяной ветер проникает прямо в жилые покои.", choices: [
+        ["Починить: −2 дерева", () => state.wood >= 2 ? pay({ wood: 2 }, () => change({ warmth: 5 }), "") : change({ warmth: -18 })],
+        ["Закрыть крыло замка", () => change({ warmth: -12 })]
+    ]},
+    { title: "🦅 Весть от разведчиков", text: "Орда меняет путь. Разведчики предлагают устроить засаду.", choices: [
+        ["Возглавить засаду", () => hero.strength >= 4 ? change({ gold: 30, walls: 12 }) : change({ walls: -10 })],
+        ["Составить хитрый план", () => hero.wisdom >= 4 ? change({ walls: 22 }) : change({ walls: 5 })]
+    ]},
+    { title: "🎭 Бродячие артисты", text: "Артисты хотят выступить перед уставшими защитниками.", choices: [
+        ["Впустить бесплатно", () => change({ warmth: 14, food: -8 })],
+        ["Собрать пожертвования", () => hero.charisma >= 4 ? change({ gold: 28, warmth: 8 }) : change({ gold: 10 })]
+    ]},
+    { title: "🐉 Тень над башнями", text: "Молодой ледяной дракон кружит над замком и требует дань.", choices: [
+        ["Сразиться с драконом", () => hero.strength >= 6 ? change({ gold: 60, walls: -5 }) : change({ walls: -22 })],
+        ["Понять язык драконов", () => hero.wisdom >= 6 ? change({ mana: 35, gold: 20 }) : change({ gold: -25 })],
+        ["Убедить напасть на орду", () => hero.charisma >= 6 ? change({ walls: 35 }) : change({ food: -15 })]
+    ]},
+    { title: "🌾 Замёрзший склад", text: "Часть провианта покрылась льдом и скоро испортится.", choices: [
+        ["Отогреть склад: −12 маны", () => state.mana >= 12 ? pay({ mana: 12 }, () => change({ food: 5 }), "") : change({ food: -18 })],
+        ["Спасти что возможно", () => change({ food: -10 })]
+    ]}
+];
 
 function visitLocation(location) {
     if (!canAct()) return;
@@ -157,6 +218,10 @@ function visitLocation(location) {
     change(baseRewards[location]);
     nextDay();
     if (state.gameOver) return;
+    if (state.eventPending) {
+        updateUI();
+        return;
+    }
 
     // В большинстве путешествий появляется дополнительный выбор.
     if (Math.random() < 0.78) {
@@ -183,9 +248,11 @@ function setEvent(title, text, choices = []) {
         const button = document.createElement("button");
         button.textContent = label;
         button.addEventListener("click", () => {
+            const before = snapshotResources();
             action();
             state.eventPending = false;
             box.innerHTML = "";
+            $("event-text").textContent = describeResult(before);
             checkEnding();
             updateUI();
         }, { once: true });
@@ -193,12 +260,30 @@ function setEvent(title, text, choices = []) {
     });
 }
 
+function snapshotResources() {
+    return Object.fromEntries(["walls", "mana", "warmth", "gold", "food", "wood", "coal", "potions"].map((key) => [key, state[key]]));
+}
+
+function describeResult(before) {
+    const names = { walls: "стены", mana: "мана", warmth: "тепло", gold: "золото", food: "еда", wood: "дрова", coal: "уголь", potions: "эликсиры" };
+    const changes = Object.keys(before).map((key) => [key, state[key] - before[key]]).filter(([, amount]) => amount !== 0);
+    if (!changes.length) return "Решение принято. Запасы не изменились.";
+    return "Результат: " + changes.map(([key, amount]) => `${names[key]} ${amount > 0 ? "+" : ""}${amount}`).join(", ") + ".";
+}
+
 // Рынок тоже является ходом, но покупок за одно посещение можно сделать несколько.
 function openMarket() {
     if (!canAct()) return;
     nextDay();
     if (state.gameOver) return;
-    const discount = hero.class === "merchant" ? 0.75 : 1;
+    if (state.eventPending) {
+        updateUI();
+        return;
+    }
+    // Харизма снижает цены на 4% за очко (максимум на 20%).
+    const charismaDiscount = Math.min(hero.charisma * 0.04, 0.20);
+    const classDiscount = hero.class === "merchant" ? 0.25 : 0;
+    const discount = Math.max(0.55, 1 - charismaDiscount - classDiscount);
     const price = (base) => Math.ceil(base * discount);
     state.eventPending = true;
     setEvent("Рынок цитадели", "Покупайте сколько нужно. Когда закончите, закройте рынок.", [
@@ -224,9 +309,11 @@ function openMarket() {
 
 function marketBuy(cost, reward) {
     if (state.gold < cost) return showToast("В казне недостаточно золота.");
+    const before = snapshotResources();
     state.gold -= cost;
     change(reward);
     addHistory(`На рынке потрачено ${cost} золота.`);
+    $("event-text").textContent = describeResult(before) + " Можно продолжить покупки или закрыть рынок.";
     updateUI();
 }
 
@@ -254,7 +341,10 @@ function nextDay() {
         addHistory("Лютый холод повредил укрепления: −10 стен.");
     }
     if (state.day % 3 === 0) changeWeather();
-    if (state.raidTimer <= 0) raid();
+    const raidIsDue = state.raidTimer <= 0;
+    if (raidIsDue) raid();
+    // Мировое событие не перекрывает сообщение о набеге.
+    if (!raidIsDue && Math.random() < 0.30) showEvent(random(worldEvents));
     checkEnding();
 }
 
