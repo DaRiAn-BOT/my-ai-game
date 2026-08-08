@@ -199,7 +199,7 @@ const worldEvents = [
     { title: "🐉 Тень над башнями", text: "Молодой ледяной дракон кружит над замком и требует дань.", choices: [
         ["Сразиться с драконом", () => hero.strength >= 6 ? change({ gold: 60, walls: -5 }) : change({ walls: -22 })],
         ["Понять язык драконов", () => hero.wisdom >= 6 ? change({ mana: 35, gold: 20 }) : change({ gold: -25 })],
-        ["Убедить напасть на орду", () => hero.charisma >= 6 ? change({ walls: 35 }) : change({ food: -15 })]
+        ["👑 Убедить напасть на орду (нужно 6 харизмы)", () => hero.charisma >= 6 ? change({ walls: 35 }) : change({ food: -15 })]
     ]},
     { title: "🌾 Замёрзший склад", text: "Часть провианта покрылась льдом и скоро испортится.", choices: [
         ["Отогреть склад: −12 маны", () => state.mana >= 12 ? pay({ mana: 12 }, () => change({ food: 5 }), "") : change({ food: -18 })],
@@ -225,7 +225,14 @@ function visitLocation(location) {
 
     // В большинстве путешествий появляется дополнительный выбор.
     if (Math.random() < 0.78) {
-        showEvent(random(locationEvents[location]));
+        const locationSkills = {
+            castle: "charisma",
+            forest: "strength",
+            mines: "wisdom",
+            village: "charisma",
+            ruins: "wisdom"
+        };
+        showEvent(random(locationEvents[location]), locationSkills[location]);
     } else {
         const names = { castle: "Цитадель", forest: "Лес", mines: "Шахты", village: "Деревня", ruins: "Руины" };
         setEvent(names[location], "Путешествие прошло спокойно. Базовые ресурсы добавлены в запасы.");
@@ -233,10 +240,34 @@ function visitLocation(location) {
     updateUI();
 }
 
-function showEvent(event) {
+function showEvent(event, skill = "wisdom") {
     state.eventPending = true;
-    setEvent(event.title, event.text, event.choices);
+    setEvent(event.title, event.text, makeThreeChoices(event.choices, skill));
     addHistory(`День ${state.day}: ${event.title}.`);
+}
+
+// У каждого случайного события два обычных решения и третье — проверка характеристики.
+function makeThreeChoices(choices, skill) {
+    const result = choices.slice(0, 3);
+    if (result.length === 3) return result;
+
+    const specialChoices = {
+        strength: [`💪 Особый выбор — решить силой (нужно 4, у вас ${hero.strength})`, () => statChoice("strength", 4, { walls: 14, food: 10 }, { warmth: -12, walls: -4 })],
+        wisdom: [`🧠 Особый выбор — найти мудрое решение (нужно 4, у вас ${hero.wisdom})`, () => statChoice("wisdom", 4, { mana: 22, gold: 12 }, { mana: -12, warmth: -5 })],
+        charisma: [`👑 Особый выбор — убедить людей (нужно 4, у вас ${hero.charisma})`, () => statChoice("charisma", 4, { food: 20, gold: 15 }, { food: -7 })]
+    };
+    result.push(specialChoices[skill]);
+    return result;
+}
+
+function statChoice(skill, required, success, failure) {
+    if (hero[skill] >= required) {
+        change(success);
+        addHistory(`Особое решение удалось: проверка характеристики ${hero[skill]}/${required}.`);
+    } else {
+        change(failure);
+        addHistory(`Особое решение провалено: характеристика ${hero[skill]}/${required}.`);
+    }
 }
 
 function setEvent(title, text, choices = []) {
@@ -344,8 +375,17 @@ function nextDay() {
     const raidIsDue = state.raidTimer <= 0;
     if (raidIsDue) raid();
     // Мировое событие не перекрывает сообщение о набеге.
-    if (!raidIsDue && Math.random() < 0.30) showEvent(random(worldEvents));
+    if (!raidIsDue && Math.random() < 0.30) {
+        const event = random(worldEvents);
+        showEvent(event, worldEventSkill(event.title));
+    }
     checkEnding();
+}
+
+function worldEventSkill(title) {
+    if (title.includes("снеговик") || title.includes("труб") || title.includes("склад")) return "wisdom";
+    if (title.includes("разведчик")) return "strength";
+    return "charisma";
 }
 
 function changeWeather() {
