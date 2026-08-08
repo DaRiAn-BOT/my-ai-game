@@ -2,144 +2,139 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Осада Цитадели</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страж Северной Цитадели</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+    <main class="app">
+        <section id="menu-screen" class="screen menu-screen">
+            <div class="panel menu-card">
+                <p class="eyebrow">Пошаговая стратегия</p>
+                <h1>🏰 Страж Северной Цитадели</h1>
+                <p>Продержитесь 30 дней, собирайте припасы, укрепляйте замок и отражайте набеги ледяной орды.</p>
+                <label for="nickname">Имя правителя</label>
+                <input id="nickname" maxlength="18" placeholder="Например, Эйрик">
+                <button id="open-creation" class="primary">Создать героя</button>
+                <h3>Зал славы</h3>
+                <ol id="leaderboard" class="leaderboard"></ol>
+            </div>
+        </section>
 
-    <!-- Экран Входа -->
-    <div id="main-menu" class="screen">
-        <div class="panel login-panel">
-            <h2>🏰 Вход в игру</h2>
-            <input type="text" id="auth-nickname" placeholder="Имя Правителя">
-            <p id="auth-status"></p>
-            <button class="btn-primary" onclick="handleAuth('guest')">Играть как Гость</button>
-            <button class="btn-yellow" id="to-creation-btn" disabled onclick="toCreationScreen()">Начать ➔</button>
+        <section id="creation-screen" class="screen hidden">
+            <div class="panel creation-card">
+                <button id="back-to-menu" class="close" aria-label="Назад">×</button>
+                <p class="eyebrow">Подготовка к походу</p>
+                <h2>Выберите класс</h2>
+                <div id="class-list" class="class-grid">
+                    <button class="class-card selected" data-class="knight">
+                        <strong>🛡️ Рыцарь</strong>
+                        <span>Набеги наносят на 25% меньше урона. Начинает с мечом.</span>
+                    </button>
+                    <button class="class-card" data-class="mage">
+                        <strong>🧙 Маг</strong>
+                        <span>Заклинания дешевле на 5 маны. Начинает с амулетом.</span>
+                    </button>
+                    <button class="class-card" data-class="merchant">
+                        <strong>🪙 Купец</strong>
+                        <span>Покупки дешевле на 25%. Получает 60 золота.</span>
+                    </button>
+                </div>
+
+                <h3>Распределите 5 очков: <span id="points-left">5</span> осталось</h3>
+                <div class="stat-list">
+                    <div><span><b>💪 Сила</b><small>Уменьшает урон в опасных событиях.</small></span><b id="stat-strength">0</b><button data-stat="strength">+</button></div>
+                    <div><span><b>🧠 Мудрость</b><small>Улучшает заклинания и исследования.</small></span><b id="stat-wisdom">0</b><button data-stat="wisdom">+</button></div>
+                    <div><span><b>👑 Харизма</b><small>Помогает в торговле и переговорах.</small></span><b id="stat-charisma">0</b><button data-stat="charisma">+</button></div>
+                </div>
+                <button id="start-game" class="primary">Взойти на престол</button>
+            </div>
+        </section>
+
+        <section id="game-screen" class="screen hidden">
+            <header class="game-header panel">
+                <div><p class="eyebrow">Правитель</p><h2 id="hero-name">Герой</h2></div>
+                <div id="weather" class="weather">☀️ Ясно</div>
+                <div class="day"><span>День</span><b id="day">1 / 30</b></div>
+            </header>
+
+            <div class="game-layout">
+                <aside class="panel sidebar">
+                    <h3>Герой</h3>
+                    <div class="compact-stats">
+                        <span>💪 <b id="hero-strength">0</b></span>
+                        <span>🧠 <b id="hero-wisdom">0</b></span>
+                        <span>👑 <b id="hero-charisma">0</b></span>
+                    </div>
+                    <p id="class-bonus" class="hint"></p>
+
+                    <h3>Запасы</h3>
+                    <div class="resource-list">
+                        <div><span>🪙 Золото</span><b id="gold">0</b></div>
+                        <div><span>🌾 Еда</span><b id="food">0</b></div>
+                        <div><span>🪵 Дрова</span><b id="wood">0</b></div>
+                        <div><span>⬛ Уголь</span><b id="coal">0</b></div>
+                        <div><span>🧪 Эликсиры</span><b id="potions">0</b></div>
+                    </div>
+                    <button id="use-potion" class="action"><b>🧪 Выпить эликсир</b><small>+35 тепла. Не тратит ход.</small></button>
+
+                    <h3>Постройки</h3>
+                    <button class="action build" data-building="tower"><b>🔮 Магическая башня</b><small>70 золота и 2 дерева. +8 маны за ход.</small></button>
+                    <button class="action build" data-building="greenhouse"><b>🌿 Теплица</b><small>60 золота и 3 дерева. Расход еды −4.</small></button>
+                    <button class="action build" data-building="barracks"><b>⚔️ Казармы</b><small>80 золота и 3 дерева. Урон набегов −8.</small></button>
+                </aside>
+
+                <section class="panel center">
+                    <h3>Владения</h3>
+                    <p class="hint">Путешествие занимает один день. Наведите на действие или прочитайте подпись.</p>
+                    <div class="location-grid">
+                        <button class="location" data-location="castle"><b>🏰 Цитадель</b><small>Отдых: +20 тепла, +8 стен</small></button>
+                        <button class="location" data-location="forest"><b>🌲 Лес</b><small>Дрова и случайные находки</small></button>
+                        <button class="location" data-location="mines"><b>⛏️ Шахты</b><small>Уголь и золото, но есть риск</small></button>
+                        <button class="location" data-location="village"><b>🏘️ Деревня</b><small>Еда, слухи и помощь жителей</small></button>
+                        <button class="location" data-location="ruins"><b>🗿 Руины</b><small>Артефакты и опасная магия</small></button>
+                        <button class="location" data-location="market"><b>⚖️ Рынок</b><small>Купить необходимые припасы</small></button>
+                    </div>
+
+                    <div id="event-box" class="event-box">
+                        <h3 id="event-title">Совет ждёт приказа</h3>
+                        <p id="event-text">Выберите место на карте. Через каждые 5 дней враги атакуют стены.</p>
+                        <div id="event-choices" class="choices"></div>
+                    </div>
+
+                    <h3>Заклинания</h3>
+                    <div class="spell-grid">
+                        <button class="action spell" data-spell="shield"><b>🛡️ Ледяной щит</b><small>20 маны: восстановить 25 стен.</small></button>
+                        <button class="action spell" data-spell="fire"><b>🔥 Живое пламя</b><small>25 маны: +35 тепла.</small></button>
+                        <button class="action spell" data-spell="feast"><b>✨ Стол изобилия</b><small>35 маны: создать 28 еды.</small></button>
+                    </div>
+                </section>
+
+                <aside class="panel sidebar">
+                    <h3>Состояние замка</h3>
+                    <div class="meter"><span>🧱 Стены <b id="walls-label"></b></span><i><em id="walls-bar"></em></i></div>
+                    <div class="meter blue"><span>✨ Мана <b id="mana-label"></b></span><i><em id="mana-bar"></em></i></div>
+                    <div class="meter orange"><span>🔥 Тепло <b id="warmth-label"></b></span><i><em id="warmth-bar"></em></i></div>
+                    <div class="raid-card">🚨 Следующий набег через <b id="raid-timer">5</b> дн.</div>
+
+                    <h3>Построено</h3>
+                    <ul id="buildings-list" class="plain-list"><li>Пока ничего</li></ul>
+
+                    <h3>Летопись</h3>
+                    <ul id="history" class="history"></ul>
+                </aside>
+            </div>
+        </section>
+
+        <div id="ending" class="overlay hidden">
+            <div class="panel ending-card">
+                <h2 id="ending-title"></h2>
+                <p id="ending-text"></p>
+                <button id="restart" class="primary">Вернуться в меню</button>
+            </div>
         </div>
-    </div>
-
-    <!-- Экран создания персонажа (По скриншоту 1) -->
-    <div id="creation-screen" class="screen" style="display: none;">
-        <div class="panel modal-panel">
-            <div class="modal-header">
-                <h2>Выберите Класс Правителя 👑</h2>
-                <span class="close-x" onclick="backToMenu()">✖</span>
-            </div>
-            
-            <div class="class-cards">
-                <div class="class-card active" id="card-knight" onclick="selectClass('knight')">
-                    <b>🛡️ Рыцарь</b><br><small>+3 Сила, Меч</small>
-                </div>
-                <div class="class-card" id="card-mage" onclick="selectClass('mage')">
-                    <b>🧙‍♂️ Маг</b><br><small>+3 Мудр, 100% Магия</small>
-                </div>
-                <div class="class-card" id="card-merchant" onclick="selectClass('merchant')">
-                    <b>🪙 Купец</b><br><small>+150 Золота на старте</small>
-                </div>
-            </div>
-
-            <p class="points-text">Распределите оставшиеся очки подготовки (Всего 5):</p>
-            <div class="points-box">Доступно очков: <span id="creation-points">5</span></div>
-
-            <div class="stats-allocator">
-                <div class="stat-row">
-                    <span>💪 Сила: <b id="creation-strength" class="text-yellow">0</b></span>
-                    <button class="btn-add" onclick="upgradeStat('strength')">+</button>
-                </div>
-                <div class="stat-row">
-                    <span>🧠 Мудрость: <b id="creation-wisdom" class="text-yellow">0</b></span>
-                    <button class="btn-add" onclick="upgradeStat('wisdom')">+</button>
-                </div>
-                <div class="stat-row">
-                    <span>👑 Харизма: <b id="creation-charisma" class="text-yellow">0</b></span>
-                    <button class="btn-add" onclick="upgradeStat('charisma')">+</button>
-                </div>
-            </div>
-
-            <button id="start-game-final-btn" class="btn-start-yellow" onclick="startGameFinal()">Взойти на престол ⚔️</button>
-        </div>
-    </div>
-
-    <!-- Главный экран игры (По скриншоту 2) -->
-    <div id="game-screen" class="screen three-col-layout" style="display: none;">
-        
-        <!-- Левая колонка: Герой и Инвентарь -->
-        <div class="col panel">
-            <h3 id="hero-title" class="col-title">Архимаг Цитадели 🧙‍♂️</h3>
-            <div class="info-box">
-                <p>💪 Сила: <b id="game-strength">0</b></p>
-                <p>🧠 Мудрость: <b id="game-wisdom">0</b></p>
-                <p>👑 Харизма: <b id="game-charisma">0</b></p>
-            </div>
-
-            <h4 class="sub-title">Рюкзак (Предметы)</h4>
-            <div class="item-box">🪵 Дрова: <span id="val-wood">0</span></div>
-            <div class="item-box">✏️ Уголь: <span id="val-coal">5</span></div>
-            <div class="item-box border-yellow">🎒 Экипировка: <span id="val-artifact">Амулет Знаний</span></div>
-            <button class="item-box btn-potion" onclick="usePotion()">🧪 Эликсир Тепла (<span id="val-potion">5</span>)</button>
-
-            <h4 class="sub-title">Постройки Цитадели</h4>
-            <button class="item-box btn-build" id="build-tower" onclick="buildStructure('tower')">🗼 Маг. Башня (50🪙)</button>
-            <button class="item-box btn-build" id="build-greenhouse" onclick="buildStructure('greenhouse')">🌿 Теплица (50🪙)</button>
-        </div>
-
-        <!-- Центральная колонка: Карта и События -->
-        <div class="col panel center-col">
-            <div class="center-header">
-                <h3 class="col-title">Карта Владений 🗺️</h3>
-                <div class="weather-box" id="weather-banner">Погода: Ясно ☀️</div>
-            </div>
-
-            <div class="locations-grid">
-                <button class="loc-btn border-yellow" onclick="visitLocation('castle')">
-                    <b>🏰 Цитадель</b><br><small>В безопасности</small>
-                </button>
-                <button class="loc-btn border-red" onclick="visitLocation('forest')">
-                    <b>🌲 Лес</b><br><small class="text-blue">Разведано 📘</small>
-                </button>
-                <button class="loc-btn border-green" onclick="visitLocation('mines')">
-                    <b>⛏️ Шахты</b><br><small class="text-green">Разведано 📗</small>
-                </button>
-                <button class="loc-btn border-yellow" onclick="visitLocation('market')">
-                    <b>⚖️ Рынок</b><br><small class="text-yellow">Торговля</small>
-                </button>
-            </div>
-
-            <div class="event-board">
-                <p id="event-text">Добро пожаловать в Цитадель. Осмотрите владения, чтобы собрать ресурсы, но берегитесь холода!</p>
-                <div id="choices-container" class="choices"></div>
-            </div>
-
-            <div class="spells-container">
-                <h4 class="text-blue">📜 Книга Древних Заклинаний (Клик для каста)</h4>
-                <div class="spells-grid">
-                    <button class="btn-spell bg-blue" onclick="castSpell('shield')">🛡️ Ледяной Щит (20🧙‍♂️)</button>
-                    <button class="btn-spell bg-orange" onclick="castSpell('fire')">🔥 Огненный Дождь (30🧙‍♂️)</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Правая колонка: Статус Замка -->
-        <div class="col panel">
-            <h3 class="col-title">Статус Замка 🏰</h3>
-            
-            <div class="status-box border-red">🛡️ Стены (Состояние): <br><b id="val-walls">100%</b></div>
-            <div class="status-box border-blue">✨ Магия Цитадели: <br><b id="val-mana">100%</b></div>
-            <div class="status-box">🔥 Тепло в Замке: <b class="text-orange" id="val-warmth">100%</b></div>
-            <div class="status-box">🪙 Казна (Золото): <b class="text-yellow" id="val-gold">130</b></div>
-            <div class="status-box">🌾 Провиант (Еда): <b class="text-green" id="val-food">80</b></div>
-            <div class="status-box border-pink">🚨 До Набега Осады: <b id="val-raid">5 ходов</b></div>
-            <div class="status-box bg-dark-blue">📅 Продержались: <b id="val-day">1 дн.</b></div>
-
-            <h4 class="sub-title">Зал Славы Хроник</h4>
-            <ul class="leaderboard">
-                <li>1. Король Дариан — 14 дней</li>
-            </ul>
-        </div>
-
-    </div>
-
+        <div id="toast" class="toast"></div>
+    </main>
     <script src="app.js"></script>
 </body>
 </html>
