@@ -24,6 +24,17 @@ button:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-
 button:disabled { opacity: .48; cursor: not-allowed; }
 .primary { width: 100%; padding: 13px 18px; color: #17120a; background: var(--gold); border: 0; font-weight: 800; }
 .leaderboard { text-align: left; color: var(--muted); min-height: 24px; }
+.menu-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 24px; }
+.menu-actions button { padding: 10px 5px; }
+.account-status { margin: 20px 0 12px; padding: 10px; color: var(--muted); background: var(--box); border-radius: 9px; }
+.auth-card, .story-card { position: relative; text-align: left; }
+.story-card { width: min(650px, 100%); padding: 38px; }
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0; }
+.auth-tabs button { padding: 10px; }.auth-tabs button.selected { color: #17120a; background: var(--gold); }
+.auth-message { min-height: 24px; margin: 10px 0; color: var(--red); }.auth-message.success { color: var(--green); }
+.divider { display: flex; align-items: center; gap: 12px; margin: 14px 0; color: var(--muted); }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.google-button, #guest-auth { width: 100%; padding: 12px; margin-bottom: 8px; }
 .creation-card { position: relative; }
 .close { position: absolute; right: 18px; top: 18px; width: 36px; height: 36px; font-size: 1.4rem; }
 .class-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0 28px; }
@@ -70,4 +81,4 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 .toast { position: fixed; left: 50%; bottom: 25px; transform: translate(-50%, 25px); padding: 11px 18px; background: #381f29; border: 1px solid var(--red); border-radius: 9px; opacity: 0; pointer-events: none; transition: .2s; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 @media (max-width: 1050px) { .game-layout { grid-template-columns: 230px 1fr; }.game-layout > :last-child { grid-column: 1 / -1; width: 100%; }.history { max-height: 150px; } }
-@media (max-width: 720px) { .app { padding: 8px; }.game-layout { grid-template-columns: 1fr; }.game-layout > :last-child { grid-column: auto; }.class-grid, .location-grid, .spell-grid { grid-template-columns: 1fr; }.game-header { align-items: flex-start; gap: 10px; }.weather { font-size: .8rem; }.menu-card, .creation-card { padding: 24px 18px; } }
+@media (max-width: 720px) { .app { padding: 8px; }.game-layout { grid-template-columns: 1fr; }.game-layout > :last-child { grid-column: auto; }.class-grid, .location-grid, .spell-grid { grid-template-columns: 1fr; }.game-header { align-items: flex-start; gap: 10px; flex-wrap: wrap; }.weather { font-size: .8rem; }.menu-card, .creation-card, .story-card { padding: 24px 18px; }.menu-actions { grid-template-columns: 1fr; } }

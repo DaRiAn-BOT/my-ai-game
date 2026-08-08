@@ -13,11 +13,49 @@
                 <p class="eyebrow">Пошаговая стратегия</p>
                 <h1>🏰 Страж Северной Цитадели</h1>
                 <p>Продержитесь 30 дней, собирайте припасы, укрепляйте замок и отражайте набеги ледяной орды.</p>
-                <label for="nickname">Имя правителя</label>
-                <input id="nickname" maxlength="18" placeholder="Например, Эйрик">
-                <button id="open-creation" class="primary">Создать героя</button>
+                <div id="account-status" class="account-status">Вы не вошли в аккаунт</div>
+                <button id="open-creation" class="primary">Играть</button>
+                <div class="menu-actions">
+                    <button id="open-login">Вход</button>
+                    <button id="open-register">Регистрация</button>
+                    <button id="open-about">Об игре</button>
+                    <button id="logout" class="hidden">Выйти</button>
+                </div>
                 <h3>Зал славы</h3>
                 <ol id="leaderboard" class="leaderboard"></ol>
+            </div>
+        </section>
+
+        <section id="auth-screen" class="screen menu-screen hidden">
+            <div class="panel menu-card auth-card">
+                <button class="close back-to-menu" aria-label="Назад">×</button>
+                <p class="eyebrow">Аккаунт правителя</p>
+                <h2 id="auth-title">Вход</h2>
+                <div class="auth-tabs">
+                    <button id="login-tab" class="selected">Вход</button>
+                    <button id="register-tab">Регистрация</button>
+                </div>
+                <label for="auth-email">Email</label>
+                <input id="auth-email" type="email" autocomplete="email" placeholder="name@example.com">
+                <label for="auth-password">Пароль</label>
+                <input id="auth-password" type="password" minlength="6" autocomplete="current-password" placeholder="Минимум 6 символов">
+                <button id="email-auth" class="primary">Войти</button>
+                <p id="auth-message" class="auth-message" aria-live="polite"></p>
+                <div class="divider"><span>или</span></div>
+                <button id="google-auth" class="google-button">🌐 Войти через Google</button>
+                <button id="guest-auth">👤 Войти как гость</button>
+            </div>
+        </section>
+
+        <section id="about-screen" class="screen menu-screen hidden">
+            <div class="panel story-card">
+                <button class="close back-to-menu" aria-label="Назад">×</button>
+                <p class="eyebrow">Об игре</p>
+                <h2>Последний огонь Севера</h2>
+                <p>Много лет Северная Цитадель охраняла перевал. Но однажды вечная зима пробудила ледяную орду, а прежний король исчез во время последней разведки.</p>
+                <p>Теперь корона досталась вам. За тридцать дней нужно собрать припасы, объединить жителей и подготовить стены к решающему штурму. Каждое решение меняет судьбу замка.</p>
+                <p>Сила помогает побеждать врагов, мудрость раскрывает древнюю магию, а харизма позволяет превращать незнакомцев в союзников.</p>
+                <button class="primary back-to-menu">Вернуться в меню</button>
             </div>
         </section>
 
@@ -56,6 +94,7 @@
                 <div><p class="eyebrow">Правитель</p><h2 id="hero-name">Герой</h2></div>
                 <div id="weather" class="weather">☀️ Ясно</div>
                 <div class="day"><span>День</span><b id="day">1 / 30</b></div>
+                <button id="save-and-menu">Сохранить и выйти</button>
             </header>
 
             <div class="game-layout">
@@ -135,6 +174,13 @@
         </div>
         <div id="toast" class="toast"></div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/config.js"></script>
+    <script src="scripts/storage.js"></script>
+    <script src="scripts/events.js"></script>
+    <script src="scripts/game.js"></script>
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/ui.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
