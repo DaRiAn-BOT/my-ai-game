@@ -4,6 +4,7 @@
     --green: #4ed18b; --red: #ff6577; --orange: #ff9d55;
 }
 * { box-sizing: border-box; }
+html, body { max-width: 100%; overflow-x: hidden; }
 body { margin: 0; min-height: 100vh; color: var(--text); background: radial-gradient(circle at top, #17233a, var(--bg) 55%); font: 16px/1.45 "Segoe UI", sans-serif; }
 button, input { font: inherit; }
 button { color: inherit; }
@@ -63,10 +64,289 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 .location-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .location { min-height: 86px; padding: 11px; text-align: left; }
 .location b { margin-bottom: 5px; }
-.event-box { min-height: 185px; margin: 18px 0; padding: 18px; border: 1px solid var(--line); background: #101725; border-radius: 12px; }
-.event-box h3 { color: var(--gold); }
-.choices { display: grid; gap: 8px; }
-.choices button { padding: 10px; text-align: left; background: #28364b; }
+.location.selected-biome { border-color: var(--gold); background: #2d2a27; box-shadow: 0 0 0 1px #f4c95d55; }
+
+/* ================================================================
+   ИНТЕРАКТИВНАЯ КАРТА — тёмная панель в стиле игрового дашборда
+   ================================================================ */
+#exploration-wrapper {
+    --map-size: min(100%, 660px);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+/* Верхняя панель управления картой */
+.exploration-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.exploration-toolbar .hint { margin: 0; }
+#fullscreen-map {
+    flex: 0 0 auto;
+    padding: 9px 14px;
+    background: rgba(59, 130, 246, .08);
+    border-color: rgba(91, 167, 255, .28);
+}
+
+/* Рамка вокруг сетки создаёт ощущение отдельной стеклянной панели */
+.map-stage {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    max-width: 100%;
+    min-height: 320px;
+    padding: 16px;
+    overflow: hidden;
+    perspective: 1000px;
+    perspective-origin: 50% 42%;
+    background: radial-gradient(circle at 50% 10%, rgba(47, 72, 111, .2), transparent 55%), #0a0f1a;
+    border: 1px solid rgba(148, 163, 184, .14);
+    border-radius: 16px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025), 0 16px 34px rgba(0, 0, 0, .2);
+}
+
+/* Тёмная подложка видна между клетками как аккуратная координатная сетка */
+#map-grid {
+    display: grid;
+    grid-template-columns: repeat(15, minmax(0, 1fr));
+    grid-template-rows: repeat(15, minmax(0, 1fr));
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    max-height: none;
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    gap: 3px;
+    padding: 8px;
+    background: #0f172a;
+    border: 1px solid rgba(148, 163, 184, .16);
+    border-radius: 14px;
+    box-shadow: 0 30px 40px rgba(0, 0, 0, .7), inset 0 0 25px rgba(0, 0, 0, .28);
+    overflow: hidden;
+    transform: rotateX(35deg);
+    transform-style: preserve-3d;
+    transform-origin: center center;
+}
+
+/* Базовый тайл: приглушённый фон, тонкая рамка и плавные реакции */
+.map-tile {
+    --tile-color: rgba(100, 116, 139, .1);
+    --object-image: none;
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 0;
+    z-index: 1;
+    overflow: visible;
+    background-color: var(--tile-color);
+    border: 1px solid rgba(255, 255, 255, .05);
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .025);
+    transform-style: preserve-3d;
+    transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease, filter .18s ease;
+}
+
+/* Объект биома получает обратный наклон и визуально встаёт на поверхность. */
+.map-tile::before {
+    content: "";
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    bottom: 4%;
+    height: 118%;
+    z-index: 3;
+    background-image: var(--object-image);
+    background-position: bottom center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    transform: rotateX(-35deg) translateZ(2px);
+    transform-origin: bottom center;
+    pointer-events: none;
+    filter: drop-shadow(0 5px 3px rgba(0, 0, 0, .48));
+}
+
+/* Псевдоэлемент создаёт контактную тень под стоящим на земле объектом. */
+.map-tile::after {
+    content: "";
+    position: absolute;
+    left: 18%;
+    right: 18%;
+    bottom: 2px;
+    height: 16%;
+    z-index: -1;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .42);
+    filter: blur(2px);
+    pointer-events: none;
+}
+
+/* 2.5D-объекты стоят на нижней границе клетки и отбрасывают мягкую тень. */
+.tile-castle {
+    --tile-color: rgba(148, 163, 184, .11);
+    --object-image: url("./assets/castle.png");
+}
+.tile-forest {
+    --tile-color: rgba(16, 185, 129, .09);
+    --object-image: url("./assets/tree.png");
+}
+.tile-mine {
+    --tile-color: rgba(100, 116, 139, .12);
+    --object-image: url("./assets/mountain.png");
+}
+.tile-village {
+    --tile-color: rgba(180, 132, 73, .1);
+    --object-image: url("./assets/village.png");
+}
+.tile-ruins {
+    --tile-color: rgba(139, 92, 246, .09);
+    --object-image: url("./assets/ruins.png");
+}
+.tile-market {
+    --tile-color: rgba(234, 179, 8, .08);
+    --object-image: url("./assets/market.png");
+}
+
+/* Препятствие темнее обычной клетки, а его иконка заметнее */
+.map-tile.tile-obstacle {
+    cursor: not-allowed;
+    z-index: 2;
+    filter: saturate(.78) brightness(.82) drop-shadow(0 5px 4px rgba(0, 0, 0, .42));
+    border-color: rgba(255, 255, 255, .035);
+    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .55), inset 0 0 12px rgba(0, 0, 0, .28);
+}
+.map-tile.tile-obstacle::after { opacity: .85; transform: scale(.92); }
+
+/* Hover подсвечивает клетку, не ломая цвет выбранного биома */
+.map-tile:hover:not(.tile-obstacle):not(.player-marker) {
+    z-index: 2;
+    transform: translateY(-1px) scale(1.04);
+    filter: brightness(1.55);
+    border-color: rgba(255, 255, 255, .18);
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .035), 0 5px 12px rgba(0, 0, 0, .22);
+}
+
+/* Игрок использует отдельный PNG; свечение остаётся под его ногами. */
+.map-tile.player-marker {
+    --object-image: url("./assets/player.png");
+    z-index: 20;
+    overflow: visible;
+    cursor: default;
+    background-color: rgba(244, 201, 93, .12);
+    border-color: rgba(255, 226, 142, .8);
+    box-shadow: 0 0 5px var(--gold), 0 0 14px rgba(244, 201, 93, .55), inset 0 0 8px rgba(244, 201, 93, .22);
+    transform: scale(1.06);
+    transition: all .2s ease;
+    animation: player-glow 2s ease-in-out infinite;
+}
+.map-tile.player-marker::after {
+    left: 15%;
+    right: 15%;
+    bottom: 1px;
+    height: 20%;
+    z-index: -1;
+    opacity: 1;
+    background: rgba(244, 201, 93, .5);
+    box-shadow: 0 0 10px var(--gold);
+}
+.map-tile.player-marker::before {
+    left: 7%;
+    right: 7%;
+    height: 120%;
+    filter: drop-shadow(0 0 7px rgba(244, 201, 93, .9));
+}
+@keyframes player-glow {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.16); }
+}
+
+/* Элементы, идущие позже в DOM (нижние ряды), естественно рисуются поверх верхних. */
+.map-tile:nth-child(n) { isolation: isolate; }
+
+/* Полноэкранный оверлей: глубокий градиент и размытие интерфейса под ним */
+#exploration-wrapper.fullscreen-mode {
+    --map-size: min(calc(100vw - 38px), calc(100vh - 195px));
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    margin: 0;
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(5, 10, 20, .97), rgba(15, 23, 42, .94) 55%, rgba(7, 13, 25, .98));
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+#exploration-wrapper.fullscreen-mode .exploration-toolbar { flex: 0 0 auto; }
+#exploration-wrapper.fullscreen-mode .location-grid { position: sticky; top: 0; z-index: 5; flex: 0 0 auto; }
+#exploration-wrapper.fullscreen-mode .map-stage { flex: 1; min-height: 0; background: transparent; box-shadow: none; }
+#exploration-wrapper.fullscreen-mode #map-grid { width: min(100%, calc(100vh - 190px)); max-width: 100%; max-height: none; }
+#event-board.event-box {
+    position: relative;
+    z-index: 50;
+    isolation: isolate;
+    width: 100%;
+    min-width: 0;
+    min-height: 185px;
+    margin: 18px 0;
+    padding: 18px;
+    overflow: visible;
+    background: #101725;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, .24);
+}
+#event-board.event-box h3 { color: var(--gold); }
+.choices {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+    width: 100%;
+    min-width: 0;
+    margin-top: 14px;
+    overflow: visible;
+}
+.choices:empty { display: none; }
+.choices .event-choice-button {
+    position: relative;
+    z-index: 3;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    margin: 0;
+    padding: 11px 13px;
+    overflow-wrap: anywhere;
+    color: var(--text);
+    text-align: left;
+    line-height: 1.35;
+    opacity: 1;
+    visibility: visible;
+    background: linear-gradient(180deg, rgba(51, 65, 85, .95), rgba(38, 50, 69, .95));
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .16);
+    cursor: pointer;
+}
+.choices .event-choice-button:hover:not(:disabled) {
+    color: white;
+    background: linear-gradient(180deg, rgba(65, 84, 112, .98), rgba(46, 62, 85, .98));
+    border-color: rgba(244, 201, 93, .55);
+    transform: translateY(-1px);
+}
+.choices .event-choice-button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .spell-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .meter { margin: 13px 0; }
 .meter span { display: flex; justify-content: space-between; margin-bottom: 6px; }
@@ -82,4 +362,4 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 .toast { position: fixed; left: 50%; bottom: 25px; transform: translate(-50%, 25px); padding: 11px 18px; background: #381f29; border: 1px solid var(--red); border-radius: 9px; opacity: 0; pointer-events: none; transition: .2s; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 @media (max-width: 1050px) { .game-layout { grid-template-columns: 230px 1fr; }.game-layout > :last-child { grid-column: 1 / -1; width: 100%; }.history { max-height: 150px; } }
-@media (max-width: 720px) { .app { padding: 8px; }.game-layout { grid-template-columns: 1fr; }.game-layout > :last-child { grid-column: auto; }.class-grid, .location-grid, .spell-grid { grid-template-columns: 1fr; }.game-header { align-items: flex-start; gap: 10px; flex-wrap: wrap; }.weather { font-size: .8rem; }.menu-card, .creation-card, .story-card { padding: 24px 18px; } }
+@media (max-width: 720px) { .app { padding: 8px; overflow-x: hidden; }.game-layout { grid-template-columns: minmax(0, 1fr); }.game-layout > :last-child { grid-column: auto; }.center, #exploration-wrapper { min-width: 0; max-width: 100%; }.class-grid, .spell-grid { grid-template-columns: 1fr; }.location-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }.location small { display: none; }.game-header { align-items: flex-start; gap: 10px; flex-wrap: wrap; }.weather { font-size: .8rem; }.menu-card, .creation-card, .story-card { padding: 24px 18px; }.exploration-toolbar { align-items: flex-start; }.map-stage { min-height: 280px; padding: 6px; }#exploration-wrapper.fullscreen-mode { --map-size: min(calc(100vw - 18px), calc(100vh - 170px)); padding: 8px; } }

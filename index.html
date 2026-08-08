@@ -125,17 +125,25 @@
 
                 <section class="panel center">
                     <h3>Владения</h3>
-                    <p class="hint">Путешествие занимает один день. Наведите на действие или прочитайте подпись.</p>
-                    <div class="location-grid">
-                        <button class="location" data-location="castle"><b>🏰 Цитадель</b><small>Отдых: +20 тепла, +8 стен</small></button>
-                        <button class="location" data-location="forest"><b>🌲 Лес</b><small>Дрова и случайные находки</small></button>
-                        <button class="location" data-location="mines"><b>⛏️ Шахты</b><small>Уголь и золото, но есть риск</small></button>
-                        <button class="location" data-location="village"><b>🏘️ Деревня</b><small>Еда, слухи и помощь жителей</small></button>
-                        <button class="location" data-location="ruins"><b>🗿 Руины</b><small>Артефакты и опасная магия</small></button>
-                        <button class="location" data-location="market"><b>⚖️ Рынок</b><small>Купить необходимые припасы</small></button>
+                    <div id="exploration-wrapper">
+                        <div class="exploration-toolbar">
+                            <p class="hint">Выберите биом, затем исследуйте карту стрелками, WASD или кликом по соседней клетке.</p>
+                            <button id="fullscreen-map" type="button">⛶ На весь экран</button>
+                        </div>
+                        <div class="location-grid">
+                            <button class="location selected-biome" data-location="castle"><b>🏰 Цитадель</b><small>Отдых: +20 тепла, +8 стен</small></button>
+                            <button class="location" data-location="forest"><b>🌲 Лес</b><small>Дрова и случайные находки</small></button>
+                            <button class="location" data-location="mines"><b>⛏️ Шахты</b><small>Уголь и золото, но есть риск</small></button>
+                            <button class="location" data-location="village"><b>🏘️ Деревня</b><small>Еда, слухи и помощь жителей</small></button>
+                            <button class="location" data-location="ruins"><b>🗿 Руины</b><small>Артефакты и опасная магия</small></button>
+                            <button class="location" data-location="market"><b>⚖️ Рынок</b><small>Купить необходимые припасы</small></button>
+                        </div>
+                        <div class="map-stage map-container">
+                            <div id="map-grid" aria-label="Карта выбранной местности"></div>
+                        </div>
                     </div>
 
-                    <div id="event-box" class="event-box">
+                    <div id="event-board" class="event-box">
                         <h3 id="event-title">Совет ждёт приказа</h3>
                         <p id="event-text">Выберите место на карте. Через каждые 5 дней враги атакуют стены.</p>
                         <div id="event-choices" class="choices"></div>
@@ -181,6 +189,7 @@
     <script src="scripts/game.js"></script>
     <script src="scripts/auth.js"></script>
     <script src="scripts/ui.js"></script>
+    <script src="scripts/map.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

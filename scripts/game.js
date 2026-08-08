@@ -123,19 +123,32 @@ function statChoice(skill, required, success, failure) {
     }
 }
 
+function clearEventBoard() {
+    $("event-title").textContent = "";
+    $("event-text").textContent = "";
+    const choicesBox = $("event-choices");
+    choicesBox.replaceChildren();
+    choicesBox.classList.remove("has-choices");
+}
+
 function setEvent(title, text, choices = []) {
+    clearEventBoard();
     $("event-title").textContent = title;
     $("event-text").textContent = text;
     const box = $("event-choices");
-    box.innerHTML = "";
+    box.replaceChildren();
+    box.classList.toggle("has-choices", choices.length > 0);
     choices.forEach(([label, action]) => {
         const button = document.createElement("button");
+        button.type = "button";
+        button.className = "event-choice-button";
         button.textContent = label;
         button.addEventListener("click", () => {
             const before = snapshotResources();
             action();
             state.eventPending = false;
-            box.innerHTML = "";
+            box.replaceChildren();
+            box.classList.remove("has-choices");
             $("event-text").textContent = describeResult(before);
             checkEnding();
             updateUI();
