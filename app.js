@@ -25,6 +25,7 @@ $("use-potion").addEventListener("click", usePotion);
 document.querySelectorAll(".class-card").forEach((button) => button.addEventListener("click", () => chooseClass(button.dataset.class)));
 document.querySelectorAll("[data-stat]").forEach((button) => button.addEventListener("click", () => addStat(button.dataset.stat)));
 document.querySelectorAll("[data-location]").forEach((button) => button.addEventListener("click", () => {
+    if (!canAct()) return;
     clearEventBoard();
     generateMap(button.dataset.location);
     visitLocation(button.dataset.location);

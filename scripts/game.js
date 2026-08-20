@@ -5,6 +5,9 @@ function showScreen(id) {
     ["menu-screen", "auth-screen", "about-screen", "creation-screen", "game-screen"].forEach((screen) => {
         $(screen).classList.toggle("hidden", screen !== id);
     });
+    if (id === "game-screen" && typeof drawPlayer === "function") {
+        requestAnimationFrame(drawPlayer);
+    }
 }
 
 function openCreation() {
@@ -17,6 +20,7 @@ function openCreation() {
 function playGame() {
     if (!currentUser) return openAuth("login");
     if (loadGame()) {
+        state.eventPending = false;
         showScreen("game-screen");
         setEvent("Игра восстановлена", "Вы продолжаете с момента последнего сохранения.");
         updateUI();
@@ -76,20 +80,9 @@ function visitLocation(location) {
         return;
     }
 
-    // В большинстве путешествий появляется дополнительный выбор.
-    if (Math.random() < 0.78) {
-        const locationSkills = {
-            castle: "charisma",
-            forest: "strength",
-            mines: "wisdom",
-            village: "charisma",
-            ruins: "wisdom"
-        };
-        showEvent(random(locationEvents[location]), locationSkills[location]);
-    } else {
-        const names = { castle: "Цитадель", forest: "Лес", mines: "Шахты", village: "Деревня", ruins: "Руины" };
-        setEvent(names[location], "Путешествие прошло спокойно. Базовые ресурсы добавлены в запасы.");
-    }
+    state.eventPending = false;
+    const names = { castle: "Цитадель", forest: "Лес", mines: "Шахты", village: "Деревня", ruins: "Руины" };
+    setEvent(names[location], "Исследуйте клетки вокруг героя. События скрыты на карте — их нужно найти.");
     updateUI();
 }
 
@@ -126,7 +119,7 @@ function statChoice(skill, required, success, failure) {
 function clearEventBoard() {
     $("event-title").textContent = "";
     $("event-text").textContent = "";
-    const choicesBox = $("event-choices");
+    const choicesBox = $("choices-container");
     choicesBox.replaceChildren();
     choicesBox.classList.remove("has-choices");
 }
@@ -135,7 +128,7 @@ function setEvent(title, text, choices = []) {
     clearEventBoard();
     $("event-title").textContent = title;
     $("event-text").textContent = text;
-    const box = $("event-choices");
+    const box = $("choices-container");
     box.replaceChildren();
     box.classList.toggle("has-choices", choices.length > 0);
     choices.forEach(([label, action]) => {
@@ -190,7 +183,7 @@ function openMarket() {
         ["Закрыть рынок", () => setEvent("Рынок закрыт", "Торговцы собирают палатки до следующего визита.")]
     ]);
     // Покупки не закрывают окно; отдельная кнопка завершает торговлю.
-    $("event-choices").querySelectorAll("button").forEach((button, index) => {
+    $("choices-container").querySelectorAll("button").forEach((button, index) => {
         if (index < 3) {
             const replacement = button.cloneNode(true);
             replacement.addEventListener("click", () => {
@@ -240,11 +233,6 @@ function nextDay() {
     if (state.day % 3 === 0) changeWeather();
     const raidIsDue = state.raidTimer <= 0;
     if (raidIsDue) raid();
-    // Мировое событие не перекрывает сообщение о набеге.
-    if (!raidIsDue && Math.random() < 0.30) {
-        const event = random(worldEvents);
-        showEvent(event, worldEventSkill(event.title));
-    }
     checkEnding();
 }
 

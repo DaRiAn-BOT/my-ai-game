@@ -6,6 +6,7 @@ const MAP_CENTER = 7;
 let currentBiome = "castle";
 let mapCells = [];
 let playerPosition = { row: MAP_CENTER, column: MAP_CENTER };
+let mapIsFullscreen = false;
 
 const biomeSettings = {
     castle: { tileClass: "tile-castle", obstacleChance: 0.12, obstacleName: "стена" },
@@ -26,7 +27,9 @@ function generateMap(biomeType) {
             row,
             column,
             biome: currentBiome,
-            blocked: Math.random() < settings.obstacleChance
+            blocked: Math.random() < settings.obstacleChance,
+            hasEvent: false,
+            explored: false
         }))
     );
 
@@ -34,6 +37,7 @@ function generateMap(biomeType) {
     [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([rowOffset, columnOffset]) => {
         mapCells[MAP_CENTER + rowOffset][MAP_CENTER + columnOffset].blocked = false;
     });
+    placeHiddenEvents();
 
     renderMap();
     document.querySelectorAll("[data-location]").forEach((button) => {
@@ -42,12 +46,39 @@ function generateMap(biomeType) {
     return mapCells;
 }
 
+function placeHiddenEvents() {
+    const candidates = mapCells.flat().filter((cell) => {
+        const distanceFromStart = Math.abs(cell.row - MAP_CENTER) + Math.abs(cell.column - MAP_CENTER);
+        return !cell.blocked && distanceFromStart >= 3;
+    });
+    // На каждой карте гарантированно спрятано восемь событий.
+    for (let index = 0; index < 8 && candidates.length; index += 1) {
+        const candidateIndex = Math.floor(Math.random() * candidates.length);
+        candidates.splice(candidateIndex, 1)[0].hasEvent = true;
+    }
+}
+
+function getVisibleCells() {
+    if (mapIsFullscreen) return mapCells.flat();
+    const startRow = clamp(playerPosition.row - 2, 0, MAP_SIZE - 5);
+    const startColumn = clamp(playerPosition.column - 2, 0, MAP_SIZE - 5);
+    const visible = [];
+    for (let row = startRow; row < startRow + 5; row += 1) {
+        for (let column = startColumn; column < startColumn + 5; column += 1) visible.push(mapCells[row][column]);
+    }
+    return visible;
+}
+
 function renderMap() {
     const grid = $("map-grid");
     const fragment = document.createDocumentFragment();
     grid.innerHTML = "";
+    const visibleSize = mapIsFullscreen ? MAP_SIZE : 5;
+    grid.style.gridTemplateColumns = `repeat(${visibleSize}, minmax(0, 1fr))`;
+    grid.style.gridTemplateRows = `repeat(${visibleSize}, minmax(0, 1fr))`;
+    grid.dataset.view = mapIsFullscreen ? "full" : "local";
 
-    mapCells.flat().forEach((cell) => {
+    getVisibleCells().forEach((cell) => {
         const tile = document.createElement("div");
         const settings = biomeSettings[cell.biome];
         tile.className = `map-tile ${settings.tileClass}${cell.blocked ? " tile-obstacle" : ""}`;
@@ -60,17 +91,24 @@ function renderMap() {
     });
 
     grid.appendChild(fragment);
+    const playerMarker = document.createElement("div");
+    playerMarker.id = "map-player";
+    playerMarker.setAttribute("aria-label", "Положение игрока");
+    grid.appendChild(playerMarker);
     drawPlayer();
 }
 
 function drawPlayer() {
-    document.querySelectorAll("#map-grid .player-marker").forEach((tile) => tile.classList.remove("player-marker"));
     const selector = `[data-row="${playerPosition.row}"][data-column="${playerPosition.column}"]`;
     const playerTile = $("map-grid").querySelector(selector);
-    if (playerTile) {
-        playerTile.classList.add("player-marker");
-        playerTile.setAttribute("aria-label", "Положение игрока");
-    }
+    const marker = $("map-player");
+    if (!playerTile || !marker) return;
+    const tileWidth = playerTile.offsetWidth;
+    const tileHeight = playerTile.offsetHeight;
+    if (tileWidth === 0 || tileHeight === 0) return;
+    marker.style.width = `${tileWidth}px`;
+    marker.style.height = `${tileHeight}px`;
+    marker.style.transform = `translate3d(${playerTile.offsetLeft}px, ${playerTile.offsetTop}px, 24px) rotateX(-45deg)`;
 }
 
 function movePlayer(rowOffset, columnOffset) {
@@ -78,7 +116,8 @@ function movePlayer(rowOffset, columnOffset) {
     const targetColumn = playerPosition.column + columnOffset;
     if (!canEnterTile(targetRow, targetColumn)) return false;
     playerPosition = { row: targetRow, column: targetColumn };
-    drawPlayer();
+    mapCells[targetRow][targetColumn].explored = true;
+    renderMap();
     return true;
 }
 
@@ -93,10 +132,16 @@ function movePlayerTo(row, column) {
         showToast("Путь преграждает препятствие.");
         return;
     }
-    triggerMapCellEvent();
+    inspectCurrentCell();
 }
 
-function triggerMapCellEvent() {
+function inspectCurrentCell() {
+    const cell = mapCells[playerPosition.row][playerPosition.column];
+    if (!cell.hasEvent) {
+        showToast("Клетка исследована. Здесь ничего нет.");
+        return;
+    }
+    cell.hasEvent = false;
     clearEventBoard();
     if (currentBiome === "market") {
         showEvent({
@@ -118,7 +163,10 @@ function triggerMapCellEvent() {
         village: "charisma",
         ruins: "wisdom"
     };
-    showEvent(random(locationEvents[currentBiome]), locationSkills[currentBiome]);
+    const useLocationEvent = Math.random() < 0.75;
+    const event = useLocationEvent ? random(locationEvents[currentBiome]) : random(worldEvents);
+    const skill = useLocationEvent ? locationSkills[currentBiome] : worldEventSkill(event.title);
+    showEvent(event, skill);
 }
 
 function canEnterTile(row, column) {
@@ -128,8 +176,10 @@ function canEnterTile(row, column) {
 
 function toggleMapFullscreen() {
     const wrapper = $("exploration-wrapper");
-    const fullscreen = wrapper.classList.toggle("fullscreen-mode");
-    $("fullscreen-map").textContent = fullscreen ? "✕ Свернуть карту" : "⛶ На весь экран";
+    mapIsFullscreen = wrapper.classList.toggle("fullscreen-mode");
+    document.body.classList.toggle("map-fullscreen-open", mapIsFullscreen);
+    $("fullscreen-map").textContent = mapIsFullscreen ? "✕ Свернуть карту" : "⛶ На весь экран";
+    renderMap();
 }
 
 function handleMapKeyboard(event) {
@@ -142,16 +192,26 @@ function handleMapKeyboard(event) {
         ArrowLeft: [0, -1], KeyA: [0, -1],
         ArrowRight: [0, 1], KeyD: [0, 1]
     };
-    if (event.code === "Escape" && $("exploration-wrapper").classList.contains("fullscreen-mode")) {
+    if (event.code === "Escape" && mapIsFullscreen) {
         toggleMapFullscreen();
         return;
     }
     const movement = movements[event.code];
     if (!movement) return;
     event.preventDefault();
-    if (!movePlayer(...movement)) showToast("Туда пройти нельзя.");
+    if (!canAct()) return;
+    if (!movePlayer(...movement)) {
+        showToast("Туда пройти нельзя.");
+        return;
+    }
+    inspectCurrentCell();
 }
 
 $("fullscreen-map").addEventListener("click", toggleMapFullscreen);
 document.addEventListener("keydown", handleMapKeyboard);
+window.addEventListener("resize", drawPlayer);
 generateMap("castle");
+if (window.ResizeObserver) {
+    const mapResizeObserver = new ResizeObserver(() => requestAnimationFrame(drawPlayer));
+    mapResizeObserver.observe($("map-grid"));
+}

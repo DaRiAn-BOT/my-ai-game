@@ -20,7 +20,17 @@ function saveKey() {
 }
 
 function getSaveData() {
-    return { state, hero, buildings, creationPoints, weather, history, savedAt: Date.now() };
+    // Обработчики кнопок события являются функциями и не сериализуются.
+    // Поэтому сохранённая партия всегда загружается без незавершённого выбора.
+    return {
+        state: { ...state, eventPending: false },
+        hero,
+        buildings,
+        creationPoints,
+        weather,
+        history,
+        savedAt: Date.now()
+    };
 }
 
 function saveGame() {
@@ -50,7 +60,7 @@ function loadGame() {
     if (cloudSave && (!saved || cloudSave.savedAt > saved.savedAt)) saved = cloudSave;
     if (!saved?.state || saved.state.gameOver) return false;
 
-    state = { ...INITIAL_STATE, ...saved.state };
+    state = { ...INITIAL_STATE, ...saved.state, eventPending: false };
     hero = { ...saved.hero };
     buildings = { tower: false, greenhouse: false, barracks: false, ...saved.buildings };
     creationPoints = saved.creationPoints ?? 0;

@@ -5,6 +5,7 @@
 }
 * { box-sizing: border-box; }
 html, body { max-width: 100%; overflow-x: hidden; }
+body.map-fullscreen-open { width: 100%; height: 100%; overflow: hidden; }
 body { margin: 0; min-height: 100vh; color: var(--text); background: radial-gradient(circle at top, #17233a, var(--bg) 55%); font: 16px/1.45 "Segoe UI", sans-serif; }
 button, input { font: inherit; }
 button { color: inherit; }
@@ -103,8 +104,8 @@ button:disabled { opacity: .48; cursor: not-allowed; }
     min-height: 320px;
     padding: 16px;
     overflow: hidden;
-    perspective: 1000px;
-    perspective-origin: 50% 42%;
+    perspective: 1200px;
+    perspective-origin: 50% 44%;
     background: radial-gradient(circle at 50% 10%, rgba(47, 72, 111, .2), transparent 55%), #0a0f1a;
     border: 1px solid rgba(148, 163, 184, .14);
     border-radius: 16px;
@@ -127,50 +128,43 @@ button:disabled { opacity: .48; cursor: not-allowed; }
     background: #0f172a;
     border: 1px solid rgba(148, 163, 184, .16);
     border-radius: 14px;
-    box-shadow: 0 30px 40px rgba(0, 0, 0, .7), inset 0 0 25px rgba(0, 0, 0, .28);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, .38), inset 0 0 25px rgba(0, 0, 0, .28);
     overflow: hidden;
-    transform: rotateX(35deg);
+    position: relative;
+    transform: rotateX(45deg);
     transform-style: preserve-3d;
     transform-origin: center center;
 }
+#map-grid[data-view="local"] { width: min(100%, 560px); }
+#map-grid[data-view="full"] { width: min(100%, calc(100vh - 190px)); }
 
 /* Базовый тайл: приглушённый фон, тонкая рамка и плавные реакции */
 .map-tile {
     --tile-color: rgba(100, 116, 139, .1);
-    --object-image: none;
     position: relative;
     display: grid;
     place-items: center;
     min-width: 0;
     min-height: 0;
     z-index: 1;
-    overflow: visible;
-    background-color: var(--tile-color);
+    overflow: hidden;
+    background: linear-gradient(145deg, rgba(255, 255, 255, .025), transparent 45%), var(--tile-color);
     border: 1px solid rgba(255, 255, 255, .05);
     border-radius: 5px;
     cursor: pointer;
-    box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .025);
-    transform-style: preserve-3d;
-    transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease, filter .18s ease;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, .6), inset 0 -2px 0 rgba(0, 0, 0, .34), 0 1px 2px rgba(255, 255, 255, .02);
+    transition: transform .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease, filter .15s ease;
 }
 
-/* Объект биома получает обратный наклон и визуально встаёт на поверхность. */
+/* Тонкая текстура поверхности без внешних картинок и эмодзи. */
 .map-tile::before {
     content: "";
     position: absolute;
-    left: 5%;
-    right: 5%;
-    bottom: 4%;
-    height: 118%;
-    z-index: 3;
-    background-image: var(--object-image);
-    background-position: bottom center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    transform: rotateX(-35deg) translateZ(2px);
-    transform-origin: bottom center;
+    inset: 18%;
+    border: 1px solid rgba(255, 255, 255, .025);
+    border-radius: 35%;
+    background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, .055), transparent 58%);
     pointer-events: none;
-    filter: drop-shadow(0 5px 3px rgba(0, 0, 0, .48));
 }
 
 /* Псевдоэлемент создаёт контактную тень под стоящим на земле объектом. */
@@ -189,86 +183,59 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 }
 
 /* 2.5D-объекты стоят на нижней границе клетки и отбрасывают мягкую тень. */
-.tile-castle {
-    --tile-color: rgba(148, 163, 184, .11);
-    --object-image: url("./assets/castle.png");
-}
-.tile-forest {
-    --tile-color: rgba(16, 185, 129, .09);
-    --object-image: url("./assets/tree.png");
-}
-.tile-mine {
-    --tile-color: rgba(100, 116, 139, .12);
-    --object-image: url("./assets/mountain.png");
-}
-.tile-village {
-    --tile-color: rgba(180, 132, 73, .1);
-    --object-image: url("./assets/village.png");
-}
-.tile-ruins {
-    --tile-color: rgba(139, 92, 246, .09);
-    --object-image: url("./assets/ruins.png");
-}
-.tile-market {
-    --tile-color: rgba(234, 179, 8, .08);
-    --object-image: url("./assets/market.png");
-}
+.tile-castle { --tile-color: rgba(100, 116, 139, .2); }
+.tile-forest { --tile-color: rgba(16, 185, 129, .13); }
+.tile-mine { --tile-color: rgba(71, 85, 105, .23); }
+.tile-village { --tile-color: rgba(180, 132, 73, .16); }
+.tile-ruins { --tile-color: rgba(124, 88, 170, .16); }
+.tile-market { --tile-color: rgba(202, 160, 35, .13); }
 
 /* Препятствие темнее обычной клетки, а его иконка заметнее */
 .map-tile.tile-obstacle {
     cursor: not-allowed;
-    z-index: 2;
-    filter: saturate(.78) brightness(.82) drop-shadow(0 5px 4px rgba(0, 0, 0, .42));
+    filter: saturate(.65) brightness(.6);
     border-color: rgba(255, 255, 255, .035);
     box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .55), inset 0 0 12px rgba(0, 0, 0, .28);
 }
 .map-tile.tile-obstacle::after { opacity: .85; transform: scale(.92); }
 
 /* Hover подсвечивает клетку, не ломая цвет выбранного биома */
-.map-tile:hover:not(.tile-obstacle):not(.player-marker) {
+.map-tile:hover:not(.tile-obstacle) {
     z-index: 2;
-    transform: translateY(-1px) scale(1.04);
-    filter: brightness(1.55);
+    transform: translateY(-2px);
+    filter: brightness(1.4);
     border-color: rgba(255, 255, 255, .18);
     box-shadow: inset 0 0 0 999px rgba(255, 255, 255, .035), 0 5px 12px rgba(0, 0, 0, .22);
 }
 
-/* Игрок использует отдельный PNG; свечение остаётся под его ногами. */
-.map-tile.player-marker {
-    --object-image: url("./assets/player.png");
+/* Отдельная фишка плавно перемещается поверх клеток. */
+#map-player {
+    position: absolute;
+    top: 0;
+    left: 0;
     z-index: 20;
-    overflow: visible;
-    cursor: default;
-    background-color: rgba(244, 201, 93, .12);
-    border-color: rgba(255, 226, 142, .8);
-    box-shadow: 0 0 5px var(--gold), 0 0 14px rgba(244, 201, 93, .55), inset 0 0 8px rgba(244, 201, 93, .22);
-    transform: scale(1.06);
-    transition: all .2s ease;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+    transform-origin: bottom center;
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform .2s ease, width .2s ease, height .2s ease;
+}
+#map-player::before {
+    content: "";
+    width: 66%;
+    height: 78%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 25%, #fff9dc 0 12%, #ffe28a 24%, var(--yellow) 55%, #a86408 100%);
+    border: 2px solid rgba(255, 249, 220, .95);
+    box-shadow: 0 0 8px #fff2a8, 0 0 18px var(--yellow), 0 0 30px rgba(244, 201, 93, .72), 0 5px 9px rgba(0, 0, 0, .75);
     animation: player-glow 2s ease-in-out infinite;
 }
-.map-tile.player-marker::after {
-    left: 15%;
-    right: 15%;
-    bottom: 1px;
-    height: 20%;
-    z-index: -1;
-    opacity: 1;
-    background: rgba(244, 201, 93, .5);
-    box-shadow: 0 0 10px var(--gold);
-}
-.map-tile.player-marker::before {
-    left: 7%;
-    right: 7%;
-    height: 120%;
-    filter: drop-shadow(0 0 7px rgba(244, 201, 93, .9));
-}
 @keyframes player-glow {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.16); }
+    0%, 100% { transform: translateY(-2px) scale(1); box-shadow: 0 0 8px #fff2a8, 0 0 18px var(--yellow), 0 0 30px rgba(244, 201, 93, .62), 0 5px 9px rgba(0, 0, 0, .75); }
+    50% { transform: translateY(-5px) scale(1.07); box-shadow: 0 0 12px #fff7cf, 0 0 25px var(--yellow), 0 0 40px rgba(244, 201, 93, .85), 0 7px 12px rgba(0, 0, 0, .8); }
 }
-
-/* Элементы, идущие позже в DOM (нижние ряды), естественно рисуются поверх верхних. */
-.map-tile:nth-child(n) { isolation: isolate; }
 
 /* Полноэкранный оверлей: глубокий градиент и размытие интерфейса под ним */
 #exploration-wrapper.fullscreen-mode {
@@ -289,6 +256,7 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 }
 #exploration-wrapper.fullscreen-mode .exploration-toolbar { flex: 0 0 auto; }
 #exploration-wrapper.fullscreen-mode .location-grid { position: sticky; top: 0; z-index: 5; flex: 0 0 auto; }
+#exploration-wrapper.fullscreen-mode #event-board { flex: 0 0 auto; max-height: 34vh; overflow-y: auto; }
 #exploration-wrapper.fullscreen-mode .map-stage { flex: 1; min-height: 0; background: transparent; box-shadow: none; }
 #exploration-wrapper.fullscreen-mode #map-grid { width: min(100%, calc(100vh - 190px)); max-width: 100%; max-height: none; }
 #event-board.event-box {
