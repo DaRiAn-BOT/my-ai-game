@@ -12,7 +12,7 @@ function resetGame() {
 
 function userLabel() {
     if (isGuest) return "Гость";
-    return currentUser?.user_metadata?.full_name || currentUser?.email?.split("@")[0] || "Правитель";
+    return currentUser?.user_metadata?.ruler_name || currentUser?.user_metadata?.full_name || "Правитель";
 }
 
 function saveKey() {

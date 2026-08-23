@@ -6,10 +6,13 @@ $("open-creation").addEventListener("click", playGame);
 $("open-login").addEventListener("click", () => openAuth("login"));
 $("open-register").addEventListener("click", () => openAuth("register"));
 $("open-about").addEventListener("click", () => showScreen("about-screen"));
+$("open-hall").addEventListener("click", () => {
+    renderLeaderboard();
+    showScreen("hall-screen");
+});
 $("login-tab").addEventListener("click", () => setAuthMode("login"));
 $("register-tab").addEventListener("click", () => setAuthMode("register"));
 $("email-auth").addEventListener("click", submitEmailAuth);
-$("google-auth").addEventListener("click", signInWithGoogle);
 $("guest-auth").addEventListener("click", signInAsGuest);
 $("logout").addEventListener("click", logout);
 $("save-and-menu").addEventListener("click", () => { saveGame(); showScreen("menu-screen"); showToast("Игра сохранена."); });

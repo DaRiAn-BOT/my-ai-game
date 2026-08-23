@@ -19,9 +19,8 @@
                     <button id="open-login">Вход</button>
                     <button id="open-register">Регистрация</button>
                     <button id="open-about" class="large-menu-button">Об игре</button>
+                    <button id="open-hall" class="large-menu-button">Зал славы</button>
                 </div>
-                <h3>Зал славы</h3>
-                <ol id="leaderboard" class="leaderboard"></ol>
                 <button id="logout" class="logout-button hidden">Выйти из аккаунта</button>
             </div>
         </section>
@@ -35,14 +34,14 @@
                     <button id="login-tab" class="selected">Вход</button>
                     <button id="register-tab">Регистрация</button>
                 </div>
+                <label for="auth-nickname">Никнейм</label>
+                <input id="auth-nickname" type="text" autocomplete="nickname" minlength="2" maxlength="24" placeholder="Например: СеверныйСтраж">
                 <label for="auth-email">Gmail</label>
                 <input id="auth-email" type="email" autocomplete="email" placeholder="name@gmail.com">
                 <label for="auth-password">Пароль</label>
                 <input id="auth-password" type="password" minlength="6" autocomplete="current-password" placeholder="Минимум 6 символов">
                 <button id="email-auth" class="primary">Войти</button>
                 <p id="auth-message" class="auth-message" aria-live="polite"></p>
-                <div class="divider"><span>или</span></div>
-                <button id="google-auth" class="google-button">🌐 Войти через Google</button>
                 <button id="guest-auth">👤 Войти как гость</button>
             </div>
         </section>
@@ -59,6 +58,17 @@
             </div>
         </section>
 
+        <section id="hall-screen" class="screen menu-screen hidden">
+            <div class="panel story-card hall-card">
+                <button class="close back-to-menu" aria-label="Назад">×</button>
+                <p class="eyebrow">Хроники Севера</p>
+                <h2>Зал славы</h2>
+                <p class="hall-description">Здесь хранятся лучшие завершённые походы этого устройства.</p>
+                <ol id="leaderboard" class="leaderboard"></ol>
+                <button class="primary back-to-menu">Вернуться в меню</button>
+            </div>
+        </section>
+
         <section id="creation-screen" class="screen hidden">
             <div class="panel creation-card">
                 <button id="back-to-menu" class="close" aria-label="Назад">×</button>
@@ -67,15 +77,15 @@
                 <div id="class-list" class="class-grid">
                     <button class="class-card selected" data-class="knight">
                         <strong>🛡️ Рыцарь</strong>
-                        <span>Набеги наносят на 25% меньше урона. Начинает с мечом.</span>
+                        <span>Начинает поход с +15 тепла.</span>
                     </button>
                     <button class="class-card" data-class="mage">
                         <strong>🧙 Маг</strong>
-                        <span>Заклинания дешевле на 5 маны. Начинает с амулетом.</span>
+                        <span>Видит туман войны на 1 клетку дальше.</span>
                     </button>
                     <button class="class-card" data-class="merchant">
                         <strong>🪙 Купец</strong>
-                        <span>Покупки дешевле на 25%. Получает 60 золота.</span>
+                        <span>Начинает с дополнительными 20 золотыми.</span>
                     </button>
                 </div>
 
@@ -127,8 +137,14 @@
                     <h3>Владения</h3>
                     <div id="exploration-wrapper">
                         <div class="exploration-toolbar">
-                            <p class="hint">Выберите биом, затем исследуйте карту стрелками, WASD или кликом по соседней клетке.</p>
+                            <p class="hint">Исследуйте карту стрелками, WASD или кликом. C — построить костёр за 5 дерева, Enter — взаимодействовать.</p>
                             <button id="fullscreen-map" type="button">⛶ На весь экран</button>
+                        </div>
+                        <div id="map-compact-hud" class="map-compact-hud" aria-label="Состояние цитадели">
+                            <span>Стены <b id="map-hud-walls">100%</b></span>
+                            <span>Мана <b id="map-hud-mana">80%</b></span>
+                            <span>Тепло <b id="map-hud-warmth">90%</b></span>
+                            <span>Набег через <b id="map-hud-raid">5</b> дн.</span>
                         </div>
                         <div class="location-grid">
                             <button class="location selected-biome" data-location="castle"><b>🏰 Цитадель</b><small>Отдых: +20 тепла, +8 стен</small></button>
@@ -146,6 +162,7 @@
                         <div class="map-stage map-container">
                             <div id="map-grid" aria-label="Карта выбранной местности"></div>
                         </div>
+                        <div id="map-interaction-hint" class="map-interaction-hint hidden" role="status" aria-live="polite"></div>
                     </div>
 
                     <h3>Заклинания</h3>
@@ -179,6 +196,45 @@
                 <button id="restart" class="primary">Вернуться в меню</button>
             </div>
         </div>
+        <div id="shop-modal" class="shop-modal hidden" role="dialog" aria-modal="true" aria-labelledby="shop-title">
+            <div class="shop-card panel">
+                <div class="shop-header">
+                    <div><p class="eyebrow">Рынок</p><h2 id="shop-title">Торговый прилавок</h2></div>
+                    <button id="shop-close" class="shop-close" type="button" aria-label="Закрыть окно торговли">×</button>
+                </div>
+                <div class="shop-tabs" role="tablist" aria-label="Разделы торговли">
+                    <button class="shop-tab active" type="button" data-shop-tab="buy">Купить</button>
+                    <button class="shop-tab" type="button" data-shop-tab="sell">Продать</button>
+                    <button class="shop-tab" type="button" data-shop-tab="exchange">Обмен</button>
+                </div>
+                <section class="shop-panel" data-shop-panel="buy">
+                    <p>Потратьте золото на припасы для цитадели.</p>
+                    <button type="button" class="shop-action" data-shop-action="buy-food">15 еды — 12 золота</button>
+                    <button type="button" class="shop-action" data-shop-action="buy-wood">2 дерева — 15 золота</button>
+                    <button type="button" class="shop-action" data-shop-action="buy-walls">10 стен — 20 золота</button>
+                </section>
+                <section class="shop-panel hidden" data-shop-panel="sell">
+                    <p>Продайте излишки и получите золото.</p>
+                    <button type="button" class="shop-action" data-shop-action="sell-food">Продать 10 еды — 8 золота</button>
+                    <button type="button" class="shop-action" data-shop-action="sell-wood">Продать 2 дерева — 9 золота</button>
+                    <button type="button" class="shop-action" data-shop-action="sell-coal">Продать 2 угля — 10 золота</button>
+                </section>
+                <section class="shop-panel hidden" data-shop-panel="exchange">
+                    <p>Обменяйте ресурсы без траты золота.</p>
+                    <button type="button" class="shop-action" data-shop-action="wood-for-coal">3 дерева → 2 угля</button>
+                    <button type="button" class="shop-action" data-shop-action="coal-for-wood">2 угля → 2 дерева</button>
+                </section>
+                <button id="shop-close-bottom" class="secondary shop-close-bottom" type="button">Закрыть</button>
+            </div>
+        </div>
+        <div id="event-modal" class="event-modal hidden" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+            <div class="event-modal-card panel">
+                <p class="eyebrow">Событие локации</p>
+                <h2 id="event-modal-title"></h2>
+                <p id="event-modal-text"></p>
+                <div id="event-modal-choices" class="event-modal-choices"></div>
+            </div>
+        </div>
         <div id="toast" class="toast"></div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -189,6 +245,6 @@
     <script src="scripts/auth.js"></script>
     <script src="scripts/ui.js"></script>
     <script src="scripts/map.js"></script>
-    <script src="app.js"></script>
+    <script src="scripts/app.js"></script>
 </body>
 </html>

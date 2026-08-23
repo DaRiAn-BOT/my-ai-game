@@ -23,7 +23,6 @@ function setAuthMode(mode) {
     $("login-tab").classList.toggle("selected", !registering);
     $("register-tab").classList.toggle("selected", registering);
     $("auth-password").autocomplete = registering ? "new-password" : "current-password";
-    $("google-auth").classList.toggle("hidden", registering);
 }
 
 function authMessage(text, success = false) {
@@ -32,8 +31,13 @@ function authMessage(text, success = false) {
 }
 
 function validateCredentials() {
+    const nickname = $("auth-nickname").value.trim();
     const email = $("auth-email").value.trim().toLowerCase();
     const password = $("auth-password").value;
+    if (nickname.length < 2 || nickname.length > 24) {
+        authMessage("Никнейм должен содержать от 2 до 24 символов.");
+        return null;
+    }
     if (!/^\S+@\S+\.\S+$/.test(email)) {
         authMessage("Введите правильный адрес электронной почты.");
         return null;
@@ -42,7 +46,7 @@ function validateCredentials() {
         authMessage("Пароль должен содержать минимум 6 символов.");
         return null;
     }
-    return { email, password };
+    return { nickname, email, password };
 }
 
 async function submitEmailAuth() {
@@ -54,8 +58,9 @@ async function submitEmailAuth() {
     try {
         if (authMode === "register") {
             const { data, error } = await supabaseClient.auth.signUp({
-                ...credentials,
-                options: { data: { ruler_name: credentials.email.split("@")[0] } }
+                email: credentials.email,
+                password: credentials.password,
+                options: { data: { ruler_name: credentials.nickname, full_name: credentials.nickname } }
             });
             if (error) throw error;
             // При включённой защите Supabase может вернуть пользователя без identities для уже занятого email.
@@ -67,8 +72,16 @@ async function submitEmailAuth() {
                 authMessage("Аккаунт создан. Добро пожаловать!", true);
             }
         } else {
-            const { error } = await supabaseClient.auth.signInWithPassword(credentials);
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: credentials.email,
+                password: credentials.password
+            });
             if (error) throw error;
+            const { data: profileData, error: profileError } = await supabaseClient.auth.updateUser({
+                data: { ruler_name: credentials.nickname, full_name: credentials.nickname }
+            });
+            if (profileError) throw profileError;
+            if (profileData.user) currentUser = profileData.user;
             authMessage("Вход выполнен.", true);
         }
     } catch (error) {
@@ -77,19 +90,6 @@ async function submitEmailAuth() {
     } finally {
         $("email-auth").disabled = false;
     }
-}
-
-async function signInWithGoogle() {
-    if (location.protocol === "file:") {
-        authMessage("Google-вход работает на сайте или локальном сервере, но не через file://.");
-        return;
-    }
-    const redirectTo = `${location.origin}${location.pathname}`;
-    const { error } = await supabaseClient.auth.signInWithOAuth({
-        provider: "google",
-        options: { redirectTo }
-    });
-    if (error) authMessage("Google-вход не настроен в панели Supabase или произошла ошибка.");
 }
 
 async function signInAsGuest() {

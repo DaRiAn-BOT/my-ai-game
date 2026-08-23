@@ -2,7 +2,7 @@
 
 // Основная игровая механика.
 function showScreen(id) {
-    ["menu-screen", "auth-screen", "about-screen", "creation-screen", "game-screen"].forEach((screen) => {
+    ["menu-screen", "auth-screen", "about-screen", "hall-screen", "creation-screen", "game-screen"].forEach((screen) => {
         $(screen).classList.toggle("hidden", screen !== id);
     });
     if (id === "game-screen" && typeof drawPlayer === "function") {
@@ -21,6 +21,7 @@ function playGame() {
     if (!currentUser) return openAuth("login");
     if (loadGame()) {
         state.eventPending = false;
+        if (typeof generateMap === "function") generateMap(currentBiome);
         showScreen("game-screen");
         setEvent("Игра восстановлена", "Вы продолжаете с момента последнего сохранения.");
         updateUI();
@@ -52,43 +53,28 @@ function updateCreationUI() {
 
 function startGame() {
     if (creationPoints > 0) return showToast("Сначала распределите все 5 очков.");
-    if (hero.class === "knight") hero.strength += 2;
-    if (hero.class === "mage") hero.wisdom += 2;
-    if (hero.class === "merchant") state.gold += 60;
+    if (hero.class === "knight") state.warmth = clamp(state.warmth + 15);
+    if (hero.class === "merchant") state.gold += 20;
 
+    if (typeof generateMap === "function") generateMap(currentBiome);
     showScreen("game-screen");
     addHistory(`День 1: ${hero.name} принимает власть над цитаделью.`);
     setEvent("Первый день правления", "Разведчики сообщают: ледяная орда близко. У вас есть пять дней до первого набега.");
     updateUI();
 }
 
-// Локации: каждая даёт базовую награду и иногда запускает событие с выбором.
-
+// Выбор локации — это только переход на её карту. День тратится на решение
+// найденного события, а не на нажатие кнопки локации.
 function visitLocation(location) {
     if (!canAct()) return;
-    if (location === "market") return openMarket();
-
-    const baseRewards = {
-        castle: { warmth: 20, walls: 8 }, forest: { wood: 2 },
-        mines: { coal: 2, gold: 14 }, village: { food: 16 }, ruins: { mana: 12, gold: 8 }
-    };
-    change(baseRewards[location]);
-    nextDay();
-    if (state.gameOver) return;
-    if (state.eventPending) {
-        updateUI();
-        return;
-    }
-
     state.eventPending = false;
-    const names = { castle: "Цитадель", forest: "Лес", mines: "Шахты", village: "Деревня", ruins: "Руины" };
-    setEvent(names[location], "Исследуйте клетки вокруг героя. События скрыты на карте — их нужно найти.");
+    clearEventBoard();
     updateUI();
 }
 
 function showEvent(event, skill = "wisdom") {
     state.eventPending = true;
-    setEvent(event.title, event.text, makeThreeChoices(event.choices, skill));
+    setEventModal(event.title, event.text, makeThreeChoices(event.choices, skill));
     addHistory(`День ${state.day}: ${event.title}.`);
 }
 
@@ -117,6 +103,7 @@ function statChoice(skill, required, success, failure) {
 }
 
 function clearEventBoard() {
+    $("event-board").classList.add("is-empty");
     $("event-title").textContent = "";
     $("event-text").textContent = "";
     const choicesBox = $("choices-container");
@@ -126,6 +113,7 @@ function clearEventBoard() {
 
 function setEvent(title, text, choices = []) {
     clearEventBoard();
+    $("event-board").classList.remove("is-empty");
     $("event-title").textContent = title;
     $("event-text").textContent = text;
     const box = $("choices-container");
@@ -150,6 +138,35 @@ function setEvent(title, text, choices = []) {
     });
 }
 
+// Полноценное модальное окно для событий, найденных у ключевых объектов локации.
+function setEventModal(title, text, choices = []) {
+    const modal = $("event-modal");
+    const box = $("event-modal-choices");
+    $("event-modal-title").textContent = title;
+    $("event-modal-text").textContent = text;
+    box.replaceChildren();
+    choices.forEach(([label, action]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "event-modal-choice";
+        button.textContent = label;
+        button.addEventListener("click", () => {
+            const before = snapshotResources();
+            action();
+            const result = describeResult(before);
+            const raidWasDue = state.raidTimer <= 1;
+            state.eventPending = false;
+            modal.classList.add("hidden");
+            nextDay();
+            // Набег важнее обычного сообщения о результате: он уже выводится nextDay().
+            if (!state.gameOver && !raidWasDue) setEvent(title, `${result} Прошёл 1 день.`);
+            updateUI();
+        }, { once: true });
+        box.appendChild(button);
+    });
+    modal.classList.remove("hidden");
+}
+
 function snapshotResources() {
     return Object.fromEntries(["walls", "mana", "warmth", "gold", "food", "wood", "coal", "potions"].map((key) => [key, state[key]]));
 }
@@ -172,7 +189,7 @@ function openMarket() {
     }
     // Харизма снижает цены на 4% за очко (максимум на 20%).
     const charismaDiscount = Math.min(hero.charisma * 0.04, 0.20);
-    const classDiscount = hero.class === "merchant" ? 0.25 : 0;
+    const classDiscount = 0;
     const discount = Math.max(0.55, 1 - charismaDiscount - classDiscount);
     const price = (base) => Math.ceil(base * discount);
     state.eventPending = true;
@@ -256,7 +273,6 @@ function changeWeather() {
 function raid() {
     const raidNumber = Math.floor((state.day - 1) / 5);
     let damage = 17 + raidNumber * 5 - hero.strength * 2;
-    if (hero.class === "knight") damage = Math.round(damage * 0.75);
     if (buildings.barracks) damage -= 8;
     damage = Math.max(5, damage);
     state.walls -= damage;
@@ -274,7 +290,7 @@ function castSpell(spell) {
         feast: { cost: 35, result: { food: 28 + hero.wisdom * 2 }, text: "На столах появилась еда." }
     };
     const chosen = spells[spell];
-    const cost = Math.max(5, chosen.cost - (hero.class === "mage" ? 5 : 0));
+    const cost = chosen.cost;
     if (state.mana < cost) return showToast(`Нужно ${cost} маны.`);
     state.mana -= cost;
     change(chosen.result);
@@ -340,7 +356,10 @@ function checkEnding() {
 
 function endGame(victory, text) {
     state.gameOver = true;
+    state.eventPending = false;
     state.walls = Math.max(0, state.walls);
+    $("event-modal").classList.add("hidden");
+    $("shop-modal").classList.add("hidden");
     $("ending-title").textContent = victory ? "🏆 Цитадель спасена!" : "💀 Цитадель пала";
     $("ending-text").textContent = `${text} Вы продержались ${state.day} дней.`;
     $("ending").classList.remove("hidden");
@@ -358,6 +377,7 @@ function saveScore(days, victory) {
     const scores = readScores();
     scores.push({ name: hero.name, days, victory, savedAt: Date.now() });
     localStorage.setItem("citadel_scores", JSON.stringify(scores.sort((a, b) => b.days - a.days).slice(0, 10)));
+    void saveGlobalScore(days, victory);
 }
 
 function readScores() {
@@ -365,11 +385,53 @@ function readScores() {
     catch { return []; }
 }
 
-function renderLeaderboard() {
-    const scores = readScores().slice(0, 5);
-    $("leaderboard").innerHTML = scores.length
-        ? scores.map((score) => `<li>${escapeHtml(score.name)} — ${score.days} дн. ${score.victory ? "🏆" : ""}</li>`).join("")
+async function saveGlobalScore(days, victory) {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session?.user) return;
+
+    const record = {
+        user_id: session.user.id,
+        display_name: String(hero.name || "Правитель").trim().slice(0, 24) || "Правитель",
+        days: Math.max(1, Math.min(30, Math.round(days))),
+        victory: Boolean(victory),
+        achieved_at: new Date().toISOString()
+    };
+    const { error } = await supabaseClient.from("leaderboard").upsert(record, { onConflict: "user_id" });
+    if (error) {
+        console.warn("Не удалось сохранить общий рекорд:", error.message);
+        return;
+    }
+    if (!$("hall-screen").classList.contains("hidden")) void renderLeaderboard();
+}
+
+async function renderLeaderboard() {
+    const list = $("leaderboard");
+    list.innerHTML = "<li>Загружаем общий рейтинг…</li>";
+
+    const { data, error } = await supabaseClient
+        .from("leaderboard")
+        .select("display_name, days, victory, achieved_at")
+        .order("victory", { ascending: false })
+        .order("days", { ascending: false })
+        .order("achieved_at", { ascending: true })
+        .limit(10);
+
+    if (error) {
+        const localScores = readScores().slice(0, 5);
+        list.innerHTML = localScores.length
+            ? localScores.map(renderScore).join("") + "<li class=\"leaderboard-note\">Общий рейтинг пока недоступен.</li>"
+            : "<li>Общий рейтинг пока недоступен.</li>";
+        console.warn("Не удалось загрузить общий рейтинг:", error.message);
+        return;
+    }
+
+    list.innerHTML = data.length
+        ? data.map(renderScore).join("")
         : "<li>Здесь появится первый рекорд.</li>";
+}
+
+function renderScore(score) {
+    return `<li>${escapeHtml(score.display_name || score.name)} — ${score.days} дн. ${score.victory ? "🏆" : ""}</li>`;
 }
 
 function escapeHtml(text) {

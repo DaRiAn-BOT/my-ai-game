@@ -16,6 +16,10 @@ function updateUI() {
         $(key + "-bar").style.width = `${value}%`;
     });
     $("raid-timer").textContent = state.raidTimer;
+    $("map-hud-walls").textContent = `${clamp(state.walls)}%`;
+    $("map-hud-mana").textContent = `${clamp(state.mana)}%`;
+    $("map-hud-warmth").textContent = `${clamp(state.warmth)}%`;
+    $("map-hud-raid").textContent = state.raidTimer;
 
     const names = { tower: "🔮 Магическая башня", greenhouse: "🌿 Теплица", barracks: "⚔️ Казармы" };
     const built = Object.keys(buildings).filter((key) => buildings[key]);
