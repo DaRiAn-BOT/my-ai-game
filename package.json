@@ -1,0 +1,13 @@
+{
+  "name": "northern-citadel-guard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Browser RPG — Страж Северной Цитадели",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

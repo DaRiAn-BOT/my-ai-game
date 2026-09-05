@@ -92,12 +92,10 @@ async function submitEmailAuth() {
     }
 }
 
-async function signInAsGuest() {
+function signInAsGuest() {
     authMessage("Создаём гостевой профиль…", true);
-    const { data, error } = await supabaseClient.auth.signInAnonymously();
-    if (!error && data.user) return;
-
-    // Если Anonymous Sign-Ins ещё не включён в Supabase, гостевой режим всё равно работает локально.
+    // Гостевая партия всегда локальная: она не зависит от включённого в Supabase Anonymous Sign-In
+    // и поэтому открывается сразу, без ошибки сети или задержки.
     const generatedId = crypto.randomUUID ? crypto.randomUUID() : `guest_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     const guestId = localStorage.getItem("citadel_guest_id") || generatedId;
     localStorage.setItem("citadel_guest_id", guestId);

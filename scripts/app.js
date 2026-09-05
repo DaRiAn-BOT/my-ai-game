@@ -37,7 +37,6 @@ document.querySelectorAll("[data-spell]").forEach((button) => button.addEventLis
 document.querySelectorAll("[data-building]").forEach((button) => button.addEventListener("click", () => build(button.dataset.building)));
 
 resetGame();
-renderLeaderboard();
 updateAccountUI();
 supabaseClient.auth.getSession().then(({ data }) => applySession(data.session));
 supabaseClient.auth.onAuthStateChange((_event, session) => setTimeout(() => applySession(session), 0));
