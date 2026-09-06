@@ -16,9 +16,20 @@ let saveTimer;
 // Все изменяемые данные игры находятся в одном объекте.
 const INITIAL_STATE = {
     day: 1, maxDays: 30, walls: 100, mana: 80, warmth: 90,
-    gold: 100, food: 35, wood: 15, coal: 3, potions: 2,
-    raidTimer: 5, gameOver: false, eventPending: false
+    gold: 100, food: 80, wood: 30, coal: 3, potions: 2,
+    raidTimer: 5, gameOver: false, eventPending: false,
+    relics: { forest: false, mines: false, ruins: false, village: false },
+    greatHearthLit: false
 };
+
+const GREAT_HEARTH_RELICS = Object.freeze({
+    forest: { name: "Ветвь Древа", icon: "🌿" },
+    mines: { name: "Глубинный Уголь", icon: "🪨" },
+    village: { name: "Записи Старейшин", icon: "📜" },
+    ruins: { name: "Искра Магии", icon: "✨" }
+});
+
+let questProgress = { forest: false, mines: false, village: false, ruins: false };
 
 let state = {};
 let hero = {};

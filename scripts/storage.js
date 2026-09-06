@@ -2,7 +2,9 @@
 
 // Сохранение и восстановление игрового прогресса.
 function resetGame() {
-    state = { ...INITIAL_STATE };
+    state = { ...INITIAL_STATE, relics: { ...INITIAL_STATE.relics } };
+    questProgress = { forest: false, mines: false, village: false, ruins: false };
+    state.relics = questProgress;
     hero = { name: "Правитель", class: "knight", strength: 0, wisdom: 0, charisma: 0 };
     buildings = { tower: false, greenhouse: false, barracks: false };
     creationPoints = 5;
@@ -23,7 +25,8 @@ function getSaveData() {
     // Обработчики кнопок события являются функциями и не сериализуются.
     // Поэтому сохранённая партия всегда загружается без незавершённого выбора.
     return {
-        state: { ...state, eventPending: false },
+        state: { ...state, relics: { ...state.relics }, eventPending: false },
+        questProgress: { ...questProgress },
         hero,
         buildings,
         creationPoints,
@@ -60,7 +63,8 @@ function loadGame() {
     if (cloudSave && (!saved || cloudSave.savedAt > saved.savedAt)) saved = cloudSave;
     if (!saved?.state || saved.state.gameOver) return false;
 
-    state = { ...INITIAL_STATE, ...saved.state, eventPending: false };
+    questProgress = { ...INITIAL_STATE.relics, ...(saved.questProgress || saved.state.relics) };
+    state = { ...INITIAL_STATE, ...saved.state, relics: questProgress, eventPending: false };
     hero = { ...saved.hero };
     buildings = { tower: false, greenhouse: false, barracks: false, ...saved.buildings };
     creationPoints = saved.creationPoints ?? 0;

@@ -3,7 +3,7 @@
 // Интерактивная карта 15×15. Она отвечает только за исследование и не меняет ресурсы.
 const MAP_SIZE = 25;
 const MAP_CENTER = Math.floor(MAP_SIZE / 2);
-const VISION_RADIUS = 2;
+const VISION_RADIUS = 3;
 let currentBiome = "castle";
 let mapCells = [];
 let playerPosition = { row: MAP_CENTER, column: MAP_CENTER };
@@ -66,7 +66,12 @@ function generateMap(biomeType) {
     spawnPlayerAtMapEdge();
     enforceStartingArea();
     placeSupplies();
-    revealAroundPlayer();
+    if (currentBiome === "market") {
+        // Рынок — охраняемая открытая площадь: туман войны здесь не используется.
+        mapCells.flat().forEach((cell) => cell.explored = true);
+    } else {
+        revealAroundPlayer();
+    }
 
     renderMap();
     document.querySelectorAll("[data-location]").forEach((button) => {
@@ -408,6 +413,7 @@ function renderMap() {
     marker.id = "map-player";
     marker.className = `player-marker player-${hero.class || "knight"}${playerFacing === "left" ? " face-left" : ""}`;
     marker.setAttribute("aria-label", "Положение игрока");
+    if (!marker.childElementCount) marker.append($("player-marker-template").content.cloneNode(true));
     grid.appendChild(marker);
     drawPlayer();
 }
@@ -519,7 +525,8 @@ function animatePlayerMovement(columnOffset) {
 
 function applyTravelCost() {
     if (state.food > 0) {
-        change({ food: -1 });
+        // Еда тратится только на часть переходов: исследование остаётся лёгким и приятным.
+        if (Math.random() < 0.5) change({ food: -1 });
     } else {
         change({ warmth: -5 });
         setMapHint("Еда закончилась: холод отнимает 5 тепла за шаг.");
@@ -580,10 +587,11 @@ function collectSupply() {
     if (cell.terrain !== "supply") return false;
     const label = cell.supplyType === "berries" ? "ягоды" : "забытый сундук";
     Object.assign(cell, { terrain: "ground", supplyType: null });
-    change({ food: 10 });
-    addHistory(`Найдены ${label}: +10 еды.`);
+    const amount = ["forest", "mines", "village"].includes(currentBiome) ? 20 : 10;
+    change({ food: amount });
+    addHistory(`Найдены ${label}: +${amount} еды.`);
     updateUI();
-    setMapHint(`Найдены ${label}: +10 еды.`);
+    setMapHint(`Найдены ${label}: +${amount} еды.`);
     renderMap();
     return true;
 }
@@ -614,10 +622,10 @@ function useCampfire() {
         return true;
     }
     campfire.lastRestDay = state.day;
-    change({ warmth: 20 });
-    addHistory("Отдых у костра: +20 тепла.");
+    change({ warmth: 30 });
+    addHistory("Отдых у костра: +30 тепла.");
     updateUI();
-    setMapHint("Костёр согрел вас: +20 тепла.");
+    setMapHint("Костёр согрел и восстановил силы: +30 тепла.");
     return true;
 }
 
@@ -628,11 +636,11 @@ function buildCampfire() {
         showToast("Костёр можно поставить только на пустой клетке.");
         return;
     }
-    if (state.wood < 5) {
-        showToast("Для костра нужно 5 дерева.");
+    if (state.wood < 2) {
+        showToast("Для костра нужно 2 дерева.");
         return;
     }
-    change({ wood: -5 });
+    change({ wood: -2 });
     Object.assign(cell, { terrain: "campfire", blocked: false, lastRestDay: null });
     revealAroundCampfire(cell);
     addHistory("Построен костёр: раскрыта область вокруг него.");
@@ -643,6 +651,29 @@ function buildCampfire() {
 
 function openLocationEvent() {
     if (!getNearbyKeyObject()) return false;
+
+    // У Очага нет случайного события: он всегда сообщает настоящий ход главного задания.
+    if (currentBiome === "castle") {
+        openGreatHearthEvent();
+        return true;
+    }
+
+    // Реликвию можно отыскать только у главного объекта соответствующей локации.
+    // Неудачная попытка открывает обычное событие биома, поэтому нельзя бесконечно
+    // нажимать Enter без последствий и получать бесплатные броски.
+    if (GREAT_HEARTH_RELICS[currentBiome] && !questProgress[currentBiome]) {
+        if (Math.random() < 0.15) {
+            collectGreatHearthRelic(currentBiome);
+            const relic = GREAT_HEARTH_RELICS[currentBiome];
+            showMapStoryModal(
+                `Найдена реликвия: ${relic.name}`,
+                `Вы находите ${relic.name}. Её свет мгновенно восстанавливает здоровье и припасы: тепло и еда восстановлены до 100%. Теперь вернитесь в Цитадель, когда соберёте все четыре реликвии.`,
+                "Продолжить поиски"
+            );
+            return true;
+        }
+    }
+
     const skills = { castle: "charisma", forest: "strength", mines: "wisdom", village: "charisma", ruins: "wisdom" };
     const event = random(locationEvents[currentBiome]);
     if (!event) return false;
@@ -651,20 +682,78 @@ function openLocationEvent() {
     return true;
 }
 
+function hasAllGreatHearthRelics() {
+    return Object.keys(GREAT_HEARTH_RELICS).every((biome) => questProgress[biome]);
+}
+
+function openRelicEvent(biome) {
+    // Оставлено как совместимая точка входа для старых сохранений и обработчиков.
+    // Получение реликвии теперь происходит только через 15% проверку в openLocationEvent.
+    return false;
+}
+
+function collectGreatHearthRelic(biome) {
+    if (questProgress[biome]) return;
+    questProgress[biome] = true;
+    state.relics = questProgress;
+    // В текущей игре отдельной шкалы здоровья нет: роль выживания выполняет тепло.
+    // Реликвия полностью восстанавливает его и еду, а не прибавляет значение сверх 100.
+    change({ warmth: 100 - state.warmth, food: 100 - state.food });
+    addHistory(`Получена реликвия: ${GREAT_HEARTH_RELICS[biome].name}.`);
+    updateUI();
+}
+
+function openGreatHearthEvent() {
+    const found = Object.values(questProgress).filter(Boolean).length;
+    if (found < Object.keys(GREAT_HEARTH_RELICS).length) {
+        showMapStoryModal("Великий Очаг", `Очаг ждёт. Собрано ${found} из 4 реликвий.`, "Продолжить поиски");
+        return;
+    }
+
+    state.greatHearthLit = true;
+    addHistory("Все четыре реликвии брошены в Великий Очаг. Мир спасён.");
+    endGame(true, "Вы бросили реликвии в Очаг и спасли мир!");
+}
+
+// Информационные окна не тратят день: они показывают результат находки или
+// подсказку по заданию и закрываются обычной кнопкой.
+function showMapStoryModal(title, text, buttonText) {
+    const modal = $("event-modal");
+    $("event-modal-title").textContent = title;
+    $("event-modal-text").textContent = text;
+    const choices = $("event-modal-choices");
+    choices.replaceChildren();
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "event-modal-choice";
+    button.textContent = buttonText;
+    button.addEventListener("click", () => closeAnimatedModal(modal), { once: true });
+    choices.appendChild(button);
+    openAnimatedModal(modal);
+}
+
 // Точка входа для Enter: магазин открывается на прилавке или на соседней клетке.
 function openShopModal() {
     if (!getNearbyMarketStall()) return false;
-    $("shop-modal").classList.remove("hidden");
+    openAnimatedModal($("shop-modal"));
     return true;
 }
 
 function closeShopModal() {
-    $("shop-modal").classList.add("hidden");
+    closeAnimatedModal($("shop-modal"));
 }
 
 function switchShopTab(tab) {
     document.querySelectorAll("[data-shop-tab]").forEach((button) => button.classList.toggle("active", button.dataset.shopTab === tab));
-    document.querySelectorAll("[data-shop-panel]").forEach((panel) => panel.classList.toggle("hidden", panel.dataset.shopPanel !== tab));
+    document.querySelectorAll("[data-shop-panel]").forEach((panel) => {
+        const isActive = panel.dataset.shopPanel === tab;
+        panel.classList.toggle("hidden", !isActive);
+        panel.classList.remove("active-tab");
+        if (isActive) {
+            void panel.offsetWidth;
+            panel.classList.add("active-tab");
+        }
+    });
 }
 
 const shopTransactions = Object.freeze({

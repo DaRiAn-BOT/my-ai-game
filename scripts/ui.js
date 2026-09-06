@@ -21,6 +21,13 @@ function updateUI() {
     $("map-hud-warmth").textContent = `${clamp(state.warmth)}%`;
     $("map-hud-raid").textContent = state.raidTimer;
 
+    const relics = questProgress;
+    const relicEntries = Object.entries(GREAT_HEARTH_RELICS);
+    const relicCount = relicEntries.filter(([biome]) => relics[biome]).length;
+    $("relic-progress").innerHTML = relicEntries.map(([biome, relic]) =>
+        `<li>${relics[biome] ? "✓" : "○"} ${relic.icon} ${relic.name}</li>`
+    ).join("") + `<li><b>${state.greatHearthLit ? "🔥 Очаг горит" : `Реликвии: ${relicCount}/4`}</b></li>`;
+
     const names = { tower: "🔮 Магическая башня", greenhouse: "🌿 Теплица", barracks: "⚔️ Казармы" };
     const built = Object.keys(buildings).filter((key) => buildings[key]);
     $("buildings-list").innerHTML = built.length ? built.map((key) => `<li>${names[key]}</li>`).join("") : "<li>Пока ничего</li>";

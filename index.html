@@ -52,6 +52,7 @@
                 <button class="close back-to-menu" aria-label="Назад">×</button>
                 <p class="eyebrow">Об игре</p>
                 <h2>Последний огонь Севера</h2>
+                <p><b>Кратко по сюжету:</b> мир замерзает, а ледяная орда идёт к Цитадели. Исследуйте Лес, Шахты, Деревню и Руины, найдите четыре реликвии и принесите их к Великому Очагу, чтобы спасти Север.</p>
                 <p>Много лет Северная Цитадель охраняла перевал. Но однажды вечная зима пробудила ледяную орду, а прежний король исчез во время последней разведки.</p>
                 <p>Теперь корона досталась вам. За тридцать дней нужно собрать припасы, объединить жителей и подготовить стены к решающему штурму. Каждое решение меняет судьбу замка.</p>
                 <p>Сила помогает побеждать врагов, мудрость раскрывает древнюю магию, а харизма позволяет превращать незнакомцев в союзников.</p>
@@ -138,7 +139,7 @@
                     <h3>Владения</h3>
                     <div id="exploration-wrapper">
                         <div class="exploration-toolbar">
-                            <p class="hint">Исследуйте карту стрелками, WASD или кликом. C — построить костёр за 5 дерева, Enter — взаимодействовать.</p>
+                            <p class="hint">Исследуйте карту стрелками, WASD или кликом. C — построить костёр за 2 дерева, Enter — взаимодействовать.</p>
                             <button id="fullscreen-map" type="button">⛶ На весь экран</button>
                         </div>
                         <div id="map-compact-hud" class="map-compact-hud" aria-label="Состояние цитадели">
@@ -180,6 +181,9 @@
                     <div class="meter blue"><span>✨ Мана <b id="mana-label"></b></span><i><em id="mana-bar"></em></i></div>
                     <div class="meter orange"><span>🔥 Тепло <b id="warmth-label"></b></span><i><em id="warmth-bar"></em></i></div>
                     <div class="raid-card">🚨 Следующий набег через <b id="raid-timer">5</b> дн.</div>
+
+                    <h3>Великий Очаг</h3>
+                    <ul id="relic-progress" class="plain-list"></ul>
 
                     <h3>Построено</h3>
                     <ul id="buildings-list" class="plain-list"><li>Пока ничего</li></ul>
@@ -236,7 +240,18 @@
                 <div id="event-modal-choices" class="event-modal-choices"></div>
             </div>
         </div>
+        <div id="day-notification" class="day-notification" aria-live="polite" aria-atomic="true"></div>
         <div id="toast" class="toast"></div>
+        <template id="player-marker-template">
+            <span class="player-shadow" aria-hidden="true"></span>
+            <span class="player-figure" aria-hidden="true">
+                <span class="player-head"></span>
+                <span class="player-torso"></span>
+                <span class="player-leg player-leg-left"></span>
+                <span class="player-leg player-leg-right"></span>
+                <span class="player-tool"></span>
+            </span>
+        </template>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/config.js"></script>

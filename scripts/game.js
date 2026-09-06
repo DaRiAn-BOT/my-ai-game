@@ -25,6 +25,7 @@ function playGame() {
         showScreen("game-screen");
         setEvent("Игра восстановлена", "Вы продолжаете с момента последнего сохранения.");
         updateUI();
+        checkEnding();
     } else {
         openCreation();
     }
@@ -60,7 +61,23 @@ function startGame() {
     showScreen("game-screen");
     addHistory(`День 1: ${hero.name} принимает власть над цитаделью.`);
     setEvent("Первый день правления", "Разведчики сообщают: ледяная орда близко. У вас есть пять дней до первого набега.");
+    showGreatHearthIntro();
     updateUI();
+}
+
+function showGreatHearthIntro() {
+    const modal = $("event-modal");
+    $("event-modal-title").textContent = "🔥 Великий Очаг";
+    $("event-modal-text").textContent = "Мир замерзает. Найдите 4 реликвии в Лесу, Шахтах, Деревне и Руинах, и принесите их в Цитадель, чтобы разжечь Великий Очаг.";
+    const choices = $("event-modal-choices");
+    choices.replaceChildren();
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "event-modal-choice";
+    button.textContent = "Начать поиски";
+    button.addEventListener("click", () => closeAnimatedModal(modal), { once: true });
+    choices.appendChild(button);
+    openAnimatedModal(modal);
 }
 
 // Выбор локации — это только переход на её карту. День тратится на решение
@@ -76,6 +93,36 @@ function showEvent(event, skill = "wisdom") {
     state.eventPending = true;
     setEventModal(event.title, event.text, makeThreeChoices(event.choices, skill));
     addHistory(`День ${state.day}: ${event.title}.`);
+}
+
+const modalCloseTimers = new WeakMap();
+
+function openAnimatedModal(modal) {
+    clearTimeout(modalCloseTimers.get(modal));
+    modal.classList.remove("hidden", "modal-closing");
+}
+
+function closeAnimatedModal(modal, afterClose) {
+    if (modal.classList.contains("hidden") || modal.classList.contains("modal-closing")) return;
+    modal.classList.add("modal-closing");
+    const timer = setTimeout(() => {
+        modal.classList.add("hidden");
+        modal.classList.remove("modal-closing");
+        modalCloseTimers.delete(modal);
+        afterClose?.();
+    }, 200);
+    modalCloseTimers.set(modal, timer);
+}
+
+let dayNotificationTimer;
+function showDayNotification(dayNumber) {
+    const notification = $("day-notification");
+    clearTimeout(dayNotificationTimer);
+    notification.textContent = `☀️ День ${dayNumber}`;
+    notification.classList.remove("active");
+    void notification.offsetWidth;
+    notification.classList.add("active");
+    dayNotificationTimer = setTimeout(() => notification.classList.remove("active"), 3500);
 }
 
 // У каждого случайного события два обычных решения и третье — проверка характеристики.
@@ -151,20 +198,22 @@ function setEventModal(title, text, choices = []) {
         button.className = "event-modal-choice";
         button.textContent = label;
         button.addEventListener("click", () => {
+            box.querySelectorAll("button").forEach((choice) => choice.disabled = true);
             const before = snapshotResources();
             action();
             const result = describeResult(before);
             const raidWasDue = state.raidTimer <= 1;
             state.eventPending = false;
-            modal.classList.add("hidden");
-            nextDay();
-            // Набег важнее обычного сообщения о результате: он уже выводится nextDay().
-            if (!state.gameOver && !raidWasDue) setEvent(title, `${result} Прошёл 1 день.`);
-            updateUI();
+            closeAnimatedModal(modal, () => {
+                nextDay();
+                // Набег важнее обычного сообщения о результате: он уже выводится nextDay().
+                if (!state.gameOver && !raidWasDue) setEvent(title, `${result} Прошёл 1 день.`);
+                updateUI();
+            });
         }, { once: true });
         box.appendChild(button);
     });
-    modal.classList.remove("hidden");
+    openAnimatedModal(modal);
 }
 
 function snapshotResources() {
@@ -229,7 +278,7 @@ function nextDay() {
     state.day += 1;
     state.raidTimer -= 1;
     state.food -= buildings.greenhouse ? 5 : 9;
-    state.warmth -= weather.cold;
+    state.warmth -= Math.max(0, weather.cold - (state.greatHearthLit ? 4 : 0));
     state.mana += buildings.tower ? 13 : 5;
     if (state.coal > 0 && state.warmth < 45) {
         state.coal -= 1;
@@ -251,6 +300,7 @@ function nextDay() {
     const raidIsDue = state.raidTimer <= 0;
     if (raidIsDue) raid();
     checkEnding();
+    if (!state.gameOver) showDayNotification(state.day);
 }
 
 function worldEventSkill(title) {
@@ -337,6 +387,7 @@ function change(values) {
     state.mana = clamp(state.mana);
     state.warmth = clamp(state.warmth);
     ["gold", "food", "wood", "coal", "potions"].forEach((key) => state[key] = Math.max(0, state[key]));
+    checkEnding();
 }
 
 function canAct() {
@@ -351,6 +402,9 @@ function canAct() {
 function checkEnding() {
     if (state.gameOver) return;
     if (state.walls <= 0) return endGame(false, "Стены разрушены, и ледяная орда захватила цитадель.");
+    if (state.warmth <= 0 && state.food <= 0) {
+        return endGame(false, "В цитадели не осталось ни еды, ни тепла. Защитники не смогли пережить ледяную ночь.");
+    }
     if (state.day >= state.maxDays) return endGame(true, "Тридцатый рассвет озарил целые стены. Вражеская армия отступила на север!");
 }
 
@@ -386,48 +440,66 @@ function readScores() {
 }
 
 async function saveGlobalScore(days, victory) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session?.user) return;
+    try {
+        const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+        if (sessionError) throw sessionError;
+        // Гостевой профиль хранится только локально и не имеет настоящего auth.uid().
+        if (!session?.user || isGuest) return;
 
-    const record = {
-        user_id: session.user.id,
-        display_name: String(hero.name || "Правитель").trim().slice(0, 24) || "Правитель",
-        days: Math.max(1, Math.min(30, Math.round(days))),
-        victory: Boolean(victory),
-        achieved_at: new Date().toISOString()
-    };
-    const { error } = await supabaseClient.from("leaderboard").upsert(record, { onConflict: "user_id" });
-    if (error) {
-        console.warn("Не удалось сохранить общий рекорд:", error.message);
-        return;
+        const record = {
+            user_id: session.user.id,
+            display_name: String(hero.name || "Правитель").trim().slice(0, 24) || "Правитель",
+            days: Math.max(1, Math.min(30, Math.round(days))),
+            victory: Boolean(victory),
+            achieved_at: new Date().toISOString()
+        };
+        // Каждый завершённый поход — отдельная строка. Так рейтинг действительно
+        // показывает лучшие походы, а не только последнюю попытку игрока.
+        const { error } = await supabaseClient.from("leaderboard").insert(record);
+        if (error) throw error;
+        if (!$("hall-screen").classList.contains("hidden")) void renderLeaderboard();
+    } catch (error) {
+        console.error("Ошибка записи общего рейтинга:", error);
     }
-    if (!$("hall-screen").classList.contains("hidden")) void renderLeaderboard();
 }
 
 async function renderLeaderboard() {
     const list = $("leaderboard");
     list.innerHTML = "<li>Загружаем общий рейтинг…</li>";
 
-    const { data, error } = await supabaseClient
-        .from("leaderboard")
-        .select("display_name, days, victory, achieved_at")
-        .order("victory", { ascending: false })
-        .order("days", { ascending: false })
-        .order("achieved_at", { ascending: true })
-        .limit(10);
+    try {
+        const { data, error } = await supabaseClient
+            .from("leaderboard")
+            .select("display_name, days, victory, achieved_at")
+            .order("days", { ascending: false })
+            .order("victory", { ascending: false })
+            .order("achieved_at", { ascending: true })
+            .limit(10);
 
-    if (error) {
+        if (error) throw error;
+        const scores = data || [];
+        list.innerHTML = scores.length
+            ? scores.map(renderScore).join("")
+            : "<li>Здесь появится первый завершённый поход.</li>";
+    } catch (error) {
+        console.error("Ошибка загрузки общего рейтинга:", error);
+        // Локальные записи — только офлайн-резерв. Ошибки таблицы, RLS или
+        // авторизации выводятся явно, чтобы их можно было исправить.
+        if (!isNetworkFailure(error)) {
+            list.innerHTML = `<li class="leaderboard-error">Ошибка общего рейтинга${error?.code ? ` (${escapeHtml(error.code)})` : ""}: ${escapeHtml(error?.message || "неизвестная ошибка")}</li>`;
+            return;
+        }
         const localScores = readScores().slice(0, 5);
         list.innerHTML = localScores.length
-            ? localScores.map(renderScore).join("") + "<li class=\"leaderboard-note\">Общий рейтинг пока недоступен.</li>"
-            : "<li>Общий рейтинг пока недоступен.</li>";
-        console.warn("Не удалось загрузить общий рейтинг:", error.message);
-        return;
+            ? localScores.map(renderScore).join("") + "<li class=\"leaderboard-note\">Нет соединения с Supabase. Показаны записи этого устройства.</li>"
+            : "<li class=\"leaderboard-note\">Нет соединения с Supabase, локальных записей тоже нет.</li>";
     }
+}
 
-    list.innerHTML = data.length
-        ? data.map(renderScore).join("")
-        : "<li>Здесь появится первый рекорд.</li>";
+function isNetworkFailure(error) {
+    if (!error) return false;
+    if (error.status === 0) return true;
+    return /failed to fetch|network(?:error| request)?|load failed|offline|internet/i.test(String(error.message || ""));
 }
 
 function renderScore(score) {

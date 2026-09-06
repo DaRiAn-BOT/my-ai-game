@@ -38,6 +38,7 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 .hall-card .leaderboard li { padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, .06); }
 .hall-card .leaderboard li:last-child { border-bottom: 0; }
 .leaderboard-note { color: var(--muted); font-size: .88rem; }
+.leaderboard-error { color: #ff9aa8; font-size: .88rem; line-height: 1.45; }
 .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 18px 0; }
 .auth-tabs button { padding: 10px; }.auth-tabs button.selected { color: #17120a; background: var(--gold); }
 .auth-message { min-height: 24px; margin: 10px 0; color: var(--red); }.auth-message.success { color: var(--green); }
@@ -350,68 +351,172 @@ button:disabled { opacity: .48; cursor: not-allowed; }
     0%, 100% { transform: scaleX(var(--player-facing)) rotateX(-50deg) translateY(-10px); }
     50% { transform: scaleX(var(--player-facing)) rotateX(-50deg) translateY(-14px); }
 }
-#map-player::before {
-    content: "";
-    width: 42%;
-    height: 42%;
-    z-index: 2;
-    background: linear-gradient(135deg, #fffbe1 0 26%, #e8a71c 27% 54%, #9e5c08 55% 100%);
-    border: 1px solid rgba(255, 249, 220, .95);
-    transform: rotate(45deg) translateZ(6px);
-    box-shadow: inset 3px 3px 4px rgba(255, 255, 255, .5), inset -4px -4px 5px rgba(78, 40, 3, .58), 0 0 10px var(--yellow), 0 0 22px rgba(244, 201, 93, .75);
-    animation: player-glow 2s ease-in-out infinite;
-}
-#map-player::after {
-    content: "";
-    position: absolute;
-    z-index: 1;
-    bottom: 15%;
-    width: 56%;
-    height: 20%;
-    border-radius: 50%;
-    background: rgba(244, 201, 93, .55);
-    box-shadow: 0 0 14px var(--yellow), 0 0 24px rgba(244, 201, 93, .55);
-    animation: player-ground-glow 2s ease-in-out infinite;
-}
-@keyframes player-glow {
-    0%, 100% { transform: rotate(45deg) translateZ(6px) scale(1); box-shadow: inset 3px 3px 4px rgba(255, 255, 255, .5), inset -4px -4px 5px rgba(78, 40, 3, .58), 0 0 9px var(--yellow), 0 0 20px rgba(244, 201, 93, .58); }
-    50% { transform: rotate(45deg) translateZ(11px) scale(1.16); box-shadow: inset 3px 3px 4px rgba(255, 255, 255, .58), inset -4px -4px 5px rgba(78, 40, 3, .58), 0 0 14px #fff4c4, 0 0 30px rgba(244, 201, 93, .92); }
-}
 @keyframes player-ground-glow { 0%, 100% { opacity: .48; transform: scale(.85); } 50% { opacity: .9; transform: scale(1.16); } }
 
 /* Аватар наследует обратный наклон от .player-marker и остаётся вертикальным над картой. */
-#map-player.player-knight::before,
-#map-player.player-mage::before,
-#map-player.player-merchant::before {
-    position: absolute;
-    left: 50%;
-    bottom: 10%;
-    width: 110%;
-    height: 142%;
-    border: 0;
-    background-color: transparent;
-    background-position: bottom center;
-    background-repeat: no-repeat;
-    background-size: contain;
-    box-shadow: none;
-    transform: translateX(-50%);
-    animation: none;
-    filter: drop-shadow(0 10px 4px rgba(0, 0, 0, .78));
-}
-#map-player.player-knight::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 145'%3E%3Cellipse cx='50' cy='132' rx='33' ry='7' fill='%2302060c' fill-opacity='.65'/%3E%3Cpath d='M46 36h15v29H46Z' fill='%23c7d8ea'/%3E%3Ccircle cx='53' cy='25' r='15' fill='%23d8e5f0'/%3E%3Cpath d='M38 24q15-19 30 0v7H38Z' fill='%234b6f98'/%3E%3Cpath d='M31 119 42 61h24l12 58Z' fill='%235f83ad'/%3E%3Cpath d='M54 61h12l12 58H54Z' fill='%232c456a'/%3E%3Cpath d='m68 73 18-32 4 3-17 39Z' fill='%23d6e2ed'/%3E%3Cpath d='m64 76 15 7' stroke='%23bd9544' stroke-width='5'/%3E%3C/svg%3E"); }
-#map-player.player-mage::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 145'%3E%3Cellipse cx='50' cy='132' rx='33' ry='7' fill='%2303050a' fill-opacity='.68'/%3E%3Ccircle cx='48' cy='28' r='14' fill='%23d8c7e7'/%3E%3Cpath d='M30 120 42 56h17l18 64Z' fill='%23663f91'/%3E%3Cpath d='M50 56h9l18 64H50Z' fill='%23331c5b'/%3E%3Cpath d='M35 54q13-36 30 0Z' fill='%237e55b5'/%3E%3Cpath d='m77 124 1-88' stroke='%238e6642' stroke-width='5'/%3E%3Ccircle cx='78' cy='31' r='7' fill='%23ba8cff'/%3E%3C/svg%3E"); }
-#map-player.player-merchant::before { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 145'%3E%3Cellipse cx='50' cy='132' rx='34' ry='7' fill='%23040507' fill-opacity='.68'/%3E%3Cpath d='M24 111V55h26v56Z' fill='%234e7a48'/%3E%3Cpath d='M38 55h12v56H38Z' fill='%232a4c31'/%3E%3Ccircle cx='43' cy='30' r='14' fill='%23d4ae84'/%3E%3Cpath d='M27 27q16-20 32 0v8H27Z' fill='%237c5834'/%3E%3Cpath d='M51 70h20v48H51Z' fill='%236b472d'/%3E%3Cpath d='M54 65h16v8H54Z' fill='%23b79248'/%3E%3Cpath d='M27 116h46' stroke='%23d2aa57' stroke-width='4'/%3E%3C/svg%3E"); }
 /* Сгенерированные пиксельные спрайты классов. */
-#map-player.player-knight::before { background-image: url("assets/knight-pixel-v2.png"); }
-#map-player.player-mage::before { background-image: url("assets/mage-pixel-v2.png"); }
-#map-player.player-merchant::before { background-image: url("assets/merchant-pixel-v2.png"); }
-#map-player.player-knight::before,
-#map-player.player-mage::before,
-#map-player.player-merchant::before { image-rendering: pixelated; }
 
-#map-player.player-knight::after { background: rgba(108, 170, 241, .52); box-shadow: 0 0 14px rgba(108, 170, 241, .85); }
-#map-player.player-mage::after { background: rgba(177, 107, 255, .5); box-shadow: 0 0 14px rgba(177, 107, 255, .82); }
-#map-player.player-merchant::after { background: rgba(107, 181, 103, .46); box-shadow: 0 0 14px rgba(107, 181, 103, .78); }
+/* Составной человекоподобный маркер: тень, голова, туловище и две ноги. */
+#map-player::before,
+#map-player::after {
+    display: none;
+    content: none;
+}
+.player-shadow {
+    position: absolute;
+    z-index: 1;
+    bottom: 13%;
+    left: 50%;
+    width: 58%;
+    height: 16%;
+    border-radius: 50%;
+    background: rgba(3, 7, 14, .68);
+    box-shadow: 0 0 12px rgba(244, 201, 93, .42);
+    transform: translateX(-50%);
+    animation: player-ground-glow 2s ease-in-out infinite;
+}
+.player-figure {
+    --figure-light: #dca373;
+    --figure-main: #8b5a2b;
+    --figure-dark: #2a3d56;
+    position: absolute;
+    z-index: 2;
+    bottom: 3%;
+    left: 50%;
+    width: clamp(48px, 82%, 105px);
+    height: clamp(120px, 150%, 180px);
+    filter: drop-shadow(0 8px 3px rgba(0, 0, 0, .82)) drop-shadow(0 0 5px rgba(222, 238, 255, .26));
+    transform: translateX(-50%) translateZ(8px);
+    transform-origin: bottom center;
+}
+.player-head,
+.player-torso,
+.player-leg,
+.player-tool {
+    position: absolute;
+    display: block;
+    box-sizing: border-box;
+}
+.player-head {
+    z-index: 3;
+    top: 2%;
+    left: 50%;
+    width: 42%;
+    aspect-ratio: 1;
+    border: 1px solid rgba(255, 255, 255, .35);
+    border-radius: 2px;
+    background: linear-gradient(135deg, #efbd8a 0 48%, var(--figure-light) 49% 100%);
+    box-shadow: inset -2px -2px 0 rgba(87, 48, 28, .35);
+    transform: translateX(-50%);
+}
+.player-head::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 24%;
+    background: #6a432b;
+}
+.player-head::after {
+    content: "";
+    position: absolute;
+    top: 52%;
+    right: 17%;
+    width: 14%;
+    height: 14%;
+    background: #382015;
+    box-shadow: -2px 0 0 #382015;
+}
+.player-torso {
+    z-index: 2;
+    top: 30%;
+    left: 50%;
+    width: 58%;
+    height: 43%;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 1px;
+    background: linear-gradient(90deg, #a96e35 0 52%, var(--figure-main) 53% 100%);
+    box-shadow: inset 2px 0 0 rgba(255, 224, 176, .2), inset -3px -2px 0 rgba(43, 22, 11, .42);
+    transform: translateX(-50%);
+    transform-origin: 50% 90%;
+}
+.player-leg {
+    z-index: 1;
+    top: 67%;
+    width: 23%;
+    height: 32%;
+    border: 1px solid rgba(0, 0, 0, .35);
+    border-radius: 1px;
+    background: linear-gradient(90deg, #3b5475, var(--figure-dark));
+    transform-origin: 50% 8%;
+}
+.player-leg-left { left: 27%; }
+.player-leg-right { right: 27%; }
+.player-tool {
+    z-index: 4;
+    top: 37%;
+    right: -4%;
+    width: clamp(3px, 10%, 8px);
+    height: 47%;
+    border: 0;
+    border-radius: 0;
+    background: #74472b;
+    box-shadow: inset -1px 0 0 rgba(28, 15, 9, .45);
+    transform: rotate(-18deg);
+    transform-origin: 50% 88%;
+}
+.player-tool::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    width: clamp(9px, 34%, 16px);
+    height: clamp(5px, 15%, 9px);
+    border: 1px solid rgba(242, 248, 252, .72);
+    border-radius: 1px;
+    background: linear-gradient(135deg, #e0e8ed 0 48%, #7a8b96 49% 100%);
+    box-shadow: 1px 1px 0 rgba(20, 28, 35, .65), 0 0 3px rgba(220, 235, 244, .45);
+    transform: translateX(-50%);
+}
+/* В полной сетке 25×25 герой занимает около двух клеток, а не перекрывает карту. */
+#map-grid[data-view="full"] .player-figure {
+    bottom: -2%;
+    width: clamp(20px, 32%, 38px);
+    height: clamp(50px, 65%, 75px);
+}
+#map-grid[data-view="full"] .player-tool {
+    width: 3px;
+    height: 43%;
+}
+#map-grid[data-view="full"] .player-tool::after {
+    width: 7px;
+    height: 4px;
+}
+#map-grid[data-view="full"] .player-shadow {
+    width: 32%;
+    height: 10%;
+}
+.player-marker.player-knight .player-shadow { box-shadow: 0 0 14px rgba(108, 170, 241, .8); }
+.player-marker.player-mage .player-shadow { box-shadow: 0 0 14px rgba(177, 107, 255, .78); }
+.player-marker.player-merchant .player-shadow { box-shadow: 0 0 14px rgba(107, 181, 103, .72); }
+
+/* Ноги разъезжаются поочерёдно только во время шага. */
+.player-marker.is-moving .player-leg-left { animation: player-step-left .2s ease-in-out infinite alternate; }
+.player-marker.is-moving .player-leg-right { animation: player-step-right .2s ease-in-out infinite alternate; }
+.player-marker.is-moving .player-torso { animation: player-body-sway .2s ease-in-out infinite alternate; }
+@keyframes player-step-left {
+    from { transform: rotate(16deg) translateY(-1px); }
+    to { transform: rotate(-16deg) translateY(1px); }
+}
+@keyframes player-step-right {
+    from { transform: rotate(-16deg) translateY(1px); }
+    to { transform: rotate(16deg) translateY(-1px); }
+}
+@keyframes player-body-sway {
+    from { transform: translateX(-50%) rotate(-3deg) translateY(0); }
+    to { transform: translateX(-50%) rotate(3deg) translateY(-2px); }
+}
 
 /* Темы локаций: один и тот же тактический интерфейс, но свой характер каждой местности. */
 #map-grid.theme-citadel { background: #07101c; border-color: rgba(113, 164, 223, .28); }
@@ -1084,13 +1189,25 @@ button:disabled { opacity: .48; cursor: not-allowed; }
     -webkit-backdrop-filter: blur(7px);
 }
 .shop-modal.hidden { display: none; }
-.shop-modal:not(.hidden) .shop-card,
-.event-modal:not(.hidden) .event-modal-card {
-    animation: modalPopIn .25s ease-out both;
+.shop-modal:not(.hidden):not(.modal-closing) .shop-card,
+.event-modal:not(.hidden):not(.modal-closing) .event-modal-card {
+    animation: windowOpen .25s ease-out both;
 }
-@keyframes modalPopIn {
-    from { opacity: 0; transform: scale(.85); }
-    to { opacity: 1; transform: scale(1); }
+@keyframes windowOpen {
+    from { opacity: 0; transform: translateY(15px) scale(.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.shop-modal.modal-closing,
+.event-modal.modal-closing { animation: modalOverlayClose .2s ease-in both; }
+.shop-modal.modal-closing .shop-card,
+.event-modal.modal-closing .event-modal-card { animation: windowClose .2s ease-in both; }
+@keyframes windowClose {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(8px) scale(.95); }
+}
+@keyframes modalOverlayClose {
+    from { opacity: 1; }
+    to { opacity: 0; }
 }
 .shop-card {
     width: min(520px, 100%);
@@ -1105,6 +1222,11 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 .shop-tab { padding: 10px 8px; color: var(--muted); background: #151e2d; border: 1px solid var(--line); }
 .shop-tab.active { color: #fff5cc; background: linear-gradient(180deg, #59421d, #3c2c19); border-color: var(--gold); }
 .shop-panel { display: grid; gap: 9px; }
+.shop-panel.active-tab { animation: tabFadeIn .2s ease-out both; }
+@keyframes tabFadeIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
 .shop-panel p { margin: 0 0 4px; color: var(--muted); }
 .shop-action { width: 100%; padding: 13px 14px; text-align: left; color: var(--text); background: linear-gradient(180deg, #26344a, #1c283a); border: 1px solid rgba(147, 197, 253, .2); }
 .shop-action:hover { border-color: rgba(244, 201, 93, .65); background: linear-gradient(180deg, #354664, #263750); transform: translateY(-1px); }
@@ -1143,6 +1265,33 @@ button:disabled { opacity: .48; cursor: not-allowed; }
 #event-modal.theme-mines .event-modal-choice { background: linear-gradient(180deg, #3e3432, #242226); }
 #event-modal.theme-forest .event-modal-card { border-color: #5fb67f; background: linear-gradient(135deg, #143124, #0b1812); box-shadow: 0 0 20px rgba(71, 170, 106, .22), 0 28px 80px rgba(0, 0, 0, .7); }
 #event-modal.theme-market .event-modal-card { border-color: #e7bd52; background: linear-gradient(135deg, #381a21, #1c0e12); }
+.day-notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 10100;
+    padding: 15px 22px;
+    border: 1px solid rgba(255, 224, 142, .5);
+    border-radius: 12px;
+    color: #fff1bf;
+    background: rgba(9, 16, 29, .86);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .46), 0 0 30px rgba(244, 201, 93, .16);
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+    font-weight: 800;
+    letter-spacing: .03em;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.day-notification.active {
+    visibility: visible;
+    animation: dayFloat 3.5s ease-in-out both;
+}
+@keyframes dayFloat {
+    0% { opacity: 0; transform: translate(-50%, calc(-50% + 14px)) scale(.96); }
+    12%, 72% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, calc(-50% - 18px)) scale(1.02); }
+}
 .spell-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .meter { margin: 13px 0; }
 .meter span { display: flex; justify-content: space-between; margin-bottom: 6px; }
