@@ -29,7 +29,16 @@ $("use-potion").addEventListener("click", usePotion);
 document.querySelectorAll(".class-card").forEach((button) => button.addEventListener("click", () => chooseClass(button.dataset.class)));
 document.querySelectorAll("[data-stat]").forEach((button) => button.addEventListener("click", () => addStat(button.dataset.stat)));
 document.querySelectorAll("[data-location]").forEach((button) => button.addEventListener("click", () => {
-    if (!canAct()) return;
+    if (state.gameOver) return;
+    if (state.eventPending) {
+        showToast("Сначала выберите решение в текущем событии.");
+        return;
+    }
+    if (state.mustLeaveLocation && button.dataset.location === currentBiome) {
+        showToast("Нужно выбрать другую локацию.");
+        return;
+    }
+    if (button.dataset.location !== currentBiome) state.mustLeaveLocation = false;
     clearEventBoard();
     generateMap(button.dataset.location);
     visitLocation(button.dataset.location);

@@ -300,7 +300,69 @@ function nextDay() {
     const raidIsDue = state.raidTimer <= 0;
     if (raidIsDue) raid();
     checkEnding();
-    if (!state.gameOver) showDayNotification(state.day);
+    if (!state.gameOver) {
+        showDayNotification(state.day);
+        showLocationStayNotice();
+    }
+}
+
+// В одной локации можно провести максимум два дня: после первого игрок выбирает,
+// задержаться или уйти, после второго — должен перейти в другую локацию.
+function showLocationStayNotice() {
+    if (typeof currentBiome === "undefined") return;
+    const names = {
+        castle: "Цитадели", forest: "Лесу", mines: "Шахтах",
+        village: "Деревне", ruins: "Руинах", market: "Рынке"
+    };
+    const locationName = names[currentBiome];
+    if (!locationName) return;
+
+    state.locationStayDays = state.lastLocation === currentBiome
+        ? (state.locationStayDays || 0) + 1
+        : 1;
+    state.lastLocation = currentBiome;
+
+    if (state.locationStayDays === 1) {
+        showLocationStayDecision(locationName, false);
+        return;
+    }
+
+    state.mustLeaveLocation = true;
+    showLocationStayDecision(locationName, true);
+}
+
+function showLocationStayDecision(locationName, mustLeave) {
+    const modal = $("event-modal");
+    $("event-modal-title").textContent = mustLeave ? "Пора продолжать путь" : `День в ${locationName}`;
+    $("event-modal-text").textContent = mustLeave
+        ? `Вы уже провели в ${locationName} два дня. Здесь больше нельзя задерживаться — выберите другую локацию.`
+        : `Вы провели в ${locationName} один день. Хотите остаться ещё на день или отправиться в путь?`;
+
+    const choices = $("event-modal-choices");
+    choices.replaceChildren();
+    const addChoice = (label, action) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "event-modal-choice";
+        button.textContent = label;
+        button.addEventListener("click", () => {
+            action();
+            closeAnimatedModal(modal);
+        }, { once: true });
+        choices.appendChild(button);
+    };
+
+    if (!mustLeave) {
+        addChoice("Остаться ещё на день", () => {
+            state.mustLeaveLocation = false;
+            showToast(`Вы остались в ${locationName} ещё на один день.`);
+        });
+    }
+    addChoice(mustLeave ? "Выбрать другую локацию" : "Отправиться в путь", () => {
+        state.mustLeaveLocation = true;
+        showToast("Выберите другую локацию на панели владений.");
+    });
+    openAnimatedModal(modal);
 }
 
 function worldEventSkill(title) {
@@ -392,6 +454,10 @@ function change(values) {
 
 function canAct() {
     if (state.gameOver) return false;
+    if (state.mustLeaveLocation) {
+        showToast("В этой локации больше нельзя задерживаться. Выберите другую.");
+        return false;
+    }
     if (state.eventPending) {
         showToast("Сначала выберите решение в текущем событии.");
         return false;

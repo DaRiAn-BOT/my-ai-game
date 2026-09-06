@@ -18,6 +18,7 @@ const INITIAL_STATE = {
     day: 1, maxDays: 30, walls: 100, mana: 80, warmth: 90,
     gold: 100, food: 80, wood: 30, coal: 3, potions: 2,
     raidTimer: 5, gameOver: false, eventPending: false,
+    lastLocation: null, locationStayDays: 0, mustLeaveLocation: false,
     relics: { forest: false, mines: false, ruins: false, village: false },
     greatHearthLit: false
 };
