@@ -5,6 +5,7 @@
 $("open-creation").addEventListener("click", playGame);
 $("open-login").addEventListener("click", () => openAuth("login"));
 $("open-register").addEventListener("click", () => openAuth("register"));
+$("open-story").addEventListener("click", () => showScreen("story-screen"));
 $("open-about").addEventListener("click", () => showScreen("about-screen"));
 $("open-hall").addEventListener("click", () => {
     renderLeaderboard();
