@@ -2,7 +2,7 @@
 
 // Основная игровая механика.
 function showScreen(id) {
-    ["menu-screen", "auth-screen", "about-screen", "hall-screen", "creation-screen", "game-screen"].forEach((screen) => {
+    ["menu-screen", "auth-screen", "about-screen", "story-screen", "hall-screen", "creation-screen", "game-screen"].forEach((screen) => {
         $(screen).classList.toggle("hidden", screen !== id);
     });
     if (id === "game-screen" && typeof drawPlayer === "function") {
