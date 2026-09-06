@@ -524,6 +524,12 @@ function animatePlayerMovement(columnOffset) {
 }
 
 function applyTravelCost() {
+    // Рынок — защищённая тёплая площадь внутри Цитадели: здесь можно ходить
+    // и торговать без расхода еды и без урона от холода.
+    if (currentBiome === "market") {
+        updateUI();
+        return;
+    }
     if (state.food > 0) {
         // Еда тратится только на часть переходов: исследование остаётся лёгким и приятным.
         if (Math.random() < 0.5) change({ food: -1 });
